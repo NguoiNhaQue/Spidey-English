@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Spidey English Adventure — Bản mẫu 2</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#d62828">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Spidey English">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #8fd8ff; display: flex; justify-content: center; color: #1c2b4a; }
+  .phone { width: 100%; max-width: 430px; height: 100dvh; background: linear-gradient(180deg,#6ec6ff 0%,#bfe9ff 45%,#fff6e3 100%); display: flex; flex-direction: column; position: relative; overflow: hidden; }
+  @media (min-width: 500px) { .phone { border-left: 2px solid #ffffff88; border-right: 2px solid #ffffff88; } }
+  .cloud { position: absolute; font-size: 2.2rem; opacity: .85; animation: drift 14s linear infinite; pointer-events: none; z-index: 0; }
+  @keyframes drift { from { transform: translateX(-60px); } to { transform: translateX(480px); } }
+  .appbar { padding: 14px 16px 12px; display: flex; align-items: center; gap: 10px; background: linear-gradient(135deg,#ff6b6b,#ff9f43); border-radius: 0 0 22px 22px; box-shadow: 0 4px 12px rgba(200,60,40,.25); z-index: 2; }
+  .appbar .back { display: none; background: #ffffff55; border: none; color: #fff; font-size: 1.4rem; width: 38px; height: 38px; border-radius: 50%; cursor: pointer; font-weight: 800; }
+  .appbar.show-back .back { display: block; }
+  .appbar h2 { font-size: 1.05rem; flex: 1; color: #fff; font-weight: 800; }
+  .appbar .coins { font-size: .9rem; background: #fff; color: #b8860b; padding: 5px 12px; border-radius: 20px; font-weight: 800; }
+  main { flex: 1; overflow-y: auto; padding: 14px 14px 20px; z-index: 1; }
+  .screen { display: none; animation: fadeIn .25s; }
+  .screen.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  .btn { display: block; width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 999px; font-size: 1.02rem; font-weight: 800; cursor: pointer; color: #fff; background: linear-gradient(135deg,#3d8bff,#1d5fd1); box-shadow: 0 5px 0 #14448f; transition: transform .08s; }
+  .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #14448f; }
+  .btn.red { background: linear-gradient(135deg,#ff7b7b,#d62828); box-shadow: 0 5px 0 #8f1a1a; }
+  .btn.red:active { box-shadow: 0 2px 0 #8f1a1a; }
+  .btn.gold { background: linear-gradient(135deg,#ffd166,#f4a300); box-shadow: 0 5px 0 #a86e00; color: #5b3a00; }
+  .btn.gold:active { box-shadow: 0 2px 0 #a86e00; }
+  .btn.green { background: linear-gradient(135deg,#5fd97a,#1f9d44); box-shadow: 0 5px 0 #14652c; }
+  .btn.green:active { box-shadow: 0 2px 0 #14652c; }
+  .btn.ghost { background: #fff; color: #1d5fd1; box-shadow: 0 5px 0 #bcd6f5; }
+  .btn.ghost:active { box-shadow: 0 2px 0 #bcd6f5; }
+  .btn:disabled { opacity: .5; }
+  .card { background: #fff; border-radius: 22px; padding: 16px; margin: 12px 0; box-shadow: 0 6px 16px rgba(30,60,120,.14); }
+  .card h4 { margin-bottom: 8px; font-size: 1.02rem; }
+  .tag { display: inline-block; background: #ff6b6b; color: #fff; font-size: .75rem; font-weight: 800; padding: 3px 10px; border-radius: 20px; margin: 2px 4px 2px 0; }
+  .tag.blue { background: #3d8bff; } .tag.gold { background: #f4a300; } .tag.green { background: #1f9d44; }
+  .hero-row { display: flex; align-items: flex-end; justify-content: center; gap: 6px; padding: 6px 0 0; }
+  .hero-spidey img { width: 190px; height: 190px; object-fit: cover; border-radius: 50%; border: 6px solid #fff; box-shadow: 0 8px 20px rgba(200,40,40,.35); background: #dff1ff; }
+  .hero-leo { text-align: center; }
+  .hero-leo img { width: 92px; height: 92px; object-fit: cover; border-radius: 50%; border: 4px solid #ffd166; box-shadow: 0 6px 14px rgba(200,150,20,.35); background: #fff; }
+  .hero-leo small { display: block; font-weight: 800; font-size: .75rem; margin-top: 4px; background: #fff; border-radius: 12px; padding: 2px 8px; }
+  .equipped-chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 10px; min-height: 30px; }
+  .chip { background: #fff3d6; border: 2px solid #f4a300; color: #8a5a00; font-size: .82rem; font-weight: 700; padding: 4px 10px; border-radius: 20px; display: inline-flex; align-items: center; gap: 4px; }
+  .chip img { width: 22px; height: 22px; object-fit: contain; }
+  .speech { background: #fff; border-radius: 18px 18px 18px 6px; padding: 12px 14px; margin: 12px 0; font-size: .95rem; box-shadow: 0 4px 10px rgba(30,60,120,.12); border: 2px solid #ffe3a3; }
+  .speech b { color: #d62828; }
+  .tabbar { display: flex; background: #fff; border-radius: 22px 22px 0 0; box-shadow: 0 -4px 14px rgba(30,60,120,.12); z-index: 2; }
+  .tabbar button { flex: 1; background: none; border: none; color: #8aa0b8; padding: 8px 2px 12px; font-size: .68rem; font-weight: 700; cursor: pointer; }
+  .tabbar button .ico { display: block; font-size: 1.4rem; margin-bottom: 2px; }
+  .tabbar button.on { color: #d62828; }
+  .tabbar.hidden { display: none; }
+  /* MAP */
+  .mapwrap { position: relative; border-radius: 22px; overflow: hidden; box-shadow: 0 8px 20px rgba(30,60,120,.2); border: 4px solid #fff; aspect-ratio: 1/1; background-size: cover; background-position: center; }
+  .mnode { position: absolute; width: 54px; height: 54px; border-radius: 50%; background: #fff; border: 3px solid #bcd6f5; display: flex; align-items: center; justify-content: center; font-size: 1.35rem; font-weight: 800; cursor: pointer; transform: translate(-50%,-50%); box-shadow: 0 4px 10px rgba(0,0,0,.25); color: #1c2b4a; }
+  .mnode .mlbl { position: absolute; top: 56px; font-size: .62rem; font-weight: 800; color: #fff; background: #1c2b4a; padding: 1px 8px; border-radius: 10px; white-space: nowrap; }
+  .mnode.done { border-color: #1f9d44; background: #d8f5df; }
+  .mnode.open { border-color: #ff6b6b; animation: pulse 1.6s infinite; }
+  .mnode.lock { opacity: .75; font-size: 1.1rem; }
+  .mnode.boss { width: 64px; height: 64px; font-size: 1.7rem; border-color: #f4a300; }
+  @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(255,107,107,.55); } 50% { box-shadow: 0 0 0 10px rgba(255,107,107,0); } }
+  .zonelock { position: absolute; transform: translate(-50%,-50%); background: #ffffffee; border-radius: 14px; padding: 6px 10px; font-size: .72rem; font-weight: 800; color: #8aa0b8; box-shadow: 0 3px 8px rgba(0,0,0,.2); text-align: center; }
+  .maplegend { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  /* LESSON */
+  .steps { display: flex; gap: 6px; margin-bottom: 12px; }
+  .steps span { flex: 1; height: 10px; border-radius: 6px; background: #ffffffaa; box-shadow: inset 0 1px 3px rgba(0,0,0,.15); }
+  .steps span.done { background: #1f9d44; }
+  .steps span.now { background: #f4a300; }
+  .scene { border-radius: 18px; overflow: hidden; border: 4px solid #fff; box-shadow: 0 6px 14px rgba(30,60,120,.18); position: relative; }
+  .scene img { width: 100%; display: block; aspect-ratio: 16/10; object-fit: cover; }
+  .scene small { position: absolute; bottom: 8px; left: 8px; right: 8px; font-size: .78rem; color: #fff; background: rgba(20,30,60,.6); padding: 5px 10px; border-radius: 10px; }
+  .flash { display: flex; gap: 10px; overflow-x: auto; padding: 6px 2px 12px; }
+  .flashcard { min-width: 132px; height: 150px; border-radius: 16px; padding: 0; cursor: pointer; position: relative; overflow: hidden; border: 3px solid #fff; box-shadow: 0 4px 10px rgba(30,60,120,.2); background-size: cover; background-position: center; flex-shrink: 0; }
+  .flashcard .cap { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(10,20,40,.85)); padding: 22px 8px 8px; color: #fff; text-align: center; }
+  .flashcard .en { font-weight: 800; font-size: .95rem; }
+  .flashcard .vi { font-size: .72rem; opacity: .85; }
+  .pyr { background: #fff8e6; border: 2px dashed #f4a300; border-radius: 16px; padding: 10px 14px; margin: 10px 0; }
+  .pyr-line { padding: 10px 4px; border-bottom: 1px dashed #f0d9a0; font-size: 1.12rem; cursor: pointer; line-height: 2; }
+  .pyr-line:last-child { border-bottom: none; }
+  .pyr-line:last-child .w { font-weight: 800; }
+  .w { display: inline-block; transition: transform .18s, color .18s; padding: 0 1px; }
+  .w.speaking { transform: scale(1.5); color: #e63946; font-weight: 800; }
+  .pyr-line.heard .tick { visibility: visible; }
+  .tick { visibility: hidden; color: #1f9d44; font-weight: 800; margin-left: 6px; }
+  .game-en { font-size: 1.25rem; font-weight: 800; text-align: center; color: #d62828; }
+  .game-vi { text-align: center; color: #8aa0b8; font-size: .85rem; margin: 4px 0 8px; }
+  .word-opts { display: flex; gap: 10px; justify-content: center; margin: 14px 0; flex-wrap: wrap; }
+  .word-opt { background: #fff; border: 3px solid #bcd6f5; border-radius: 16px; padding: 14px 20px; font-size: 1.15rem; font-weight: 800; cursor: pointer; box-shadow: 0 4px 0 #bcd6f5; color: #1c2b4a; }
+  .word-opt:active { transform: translateY(3px); box-shadow: none; }
+  .word-opt.right { border-color: #1f9d44; background: #d8f5df; box-shadow: 0 4px 0 #1f9d44; animation: pop .4s; }
+  .word-opt.wrong { border-color: #e63946; background: #ffe0e0; animation: shake .4s; }
+  @keyframes pop { 50% { transform: scale(1.1); } }
+  @keyframes shake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+  .sentence-out { min-height: 56px; background: #fff8e6; border: 2px dashed #f4a300; border-radius: 14px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 1.05rem; padding: 8px; flex-wrap: wrap; font-weight: 700; }
+  .word-bank { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 12px 0; }
+  .word-bank button { background: #fff; border: 2px solid #bcd6f5; color: #1c2b4a; padding: 10px 16px; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; box-shadow: 0 3px 0 #bcd6f5; }
+  .word-bank button.used { opacity: .3; }
+  /* BATTLE */
+  .arena { position: relative; border-radius: 20px; overflow: hidden; border: 4px solid #fff; height: 300px; background-size: cover; background-position: center; box-shadow: 0 8px 18px rgba(30,60,120,.25); }
+  .arena::after { content:""; position: absolute; inset: 0; background: rgba(20,20,50,.25); }
+  .fighter { position: absolute; bottom: 18px; width: 120px; z-index: 2; transition: left .5s, right .5s; }
+  .fighter img { width: 100%; border-radius: 18px; }
+  #spideyF { left: 6%; }
+  #monsterF { right: 6%; }
+  #monsterF.hit { animation: mhit .4s; }
+  @keyframes mhit { 30% { transform: translateX(-26px) rotate(-8deg); } }
+  .webline { position: absolute; top: 46%; left: 30%; width: 0; height: 6px; background: repeating-linear-gradient(90deg,#fff 0 8px,transparent 8px 14px); z-index: 3; transition: width .45s; border-radius: 4px; }
+  .hpwrap { background: #fff; border-radius: 14px; padding: 10px 12px; margin: 10px 0; box-shadow: 0 4px 10px rgba(30,60,120,.14); }
+  .hpbar { height: 16px; background: #ffe0e0; border-radius: 10px; overflow: hidden; margin-top: 6px; }
+  .hpbar i { display: block; height: 100%; background: linear-gradient(90deg,#e63946,#ff7b7b); width: 100%; transition: width .6s; }
+  /* LOOT */
+  .loot-card { text-align: center; padding: 20px 14px; }
+  .loot-card .itemimg { width: 190px; height: 190px; object-fit: contain; animation: pop .6s; filter: drop-shadow(0 10px 16px rgba(0,0,0,.25)); background: #fff; border-radius: 24px; padding: 10px; }
+  .rarity { display: inline-block; margin: 10px 0; padding: 5px 18px; border-radius: 20px; font-weight: 800; font-size: .85rem; }
+  .rarity.rare { background: #dbe7ff; color: #1d5fd1; border: 2px solid #3d8bff; }
+  .rarity.epic { background: #fff3d6; color: #b8860b; border: 2px solid #f4a300; }
+  /* CLOSET */
+  .closet-bg { border-radius: 20px; overflow: hidden; border: 4px solid #fff; box-shadow: 0 6px 14px rgba(30,60,120,.2); }
+  .closet-bg img { width: 100%; display: block; aspect-ratio: 16/8; object-fit: cover; }
+  .closet-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px; }
+  .closet-item { background: #fff; border: 3px solid #bcd6f5; border-radius: 16px; padding: 10px; text-align: center; cursor: pointer; box-shadow: 0 4px 0 #bcd6f5; }
+  .closet-item:active { transform: translateY(2px); box-shadow: none; }
+  .closet-item img { width: 84px; height: 84px; object-fit: contain; }
+  .closet-item .nm { font-size: .82rem; font-weight: 800; margin-top: 4px; }
+  .closet-item .rw { font-size: .68rem; color: #8aa0b8; font-weight: 700; }
+  .closet-item.equipped { border-color: #f4a300; background: #fff8e6; box-shadow: 0 4px 0 #f4a300; }
+  .closet-item.locked { opacity: .55; }
+  .closet-item.locked img { filter: grayscale(1) brightness(.4); }
+  /* PARENT */
+  .pinpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 260px; margin: 14px auto; }
+  .pinpad button { padding: 15px; font-size: 1.25rem; font-weight: 800; border-radius: 16px; border: none; background: #fff; color: #1c2b4a; cursor: pointer; box-shadow: 0 4px 0 #bcd6f5; }
+  .pin-dots { text-align: center; font-size: 1.7rem; letter-spacing: 12px; margin: 10px 0; min-height: 42px; color: #d62828; }
+  .stat { display: flex; justify-content: space-between; padding: 10px 4px; border-bottom: 2px solid #f0f4fa; font-size: .95rem; }
+  .toast { position: absolute; bottom: 92px; left: 50%; transform: translateX(-50%); background: #1c2b4a; color: #fff; padding: 12px 20px; border-radius: 16px; font-weight: 800; display: none; z-index: 50; white-space: nowrap; box-shadow: 0 6px 16px rgba(0,0,0,.3); }
+  .confetti { position: absolute; font-size: 1.6rem; animation: fall 2.2s forwards; pointer-events: none; z-index: 60; }
+  @keyframes fall { to { transform: translateY(460px) rotate(340deg); opacity: 0; } }
+  .vrow { display: flex; gap: 10px; align-items: center; padding: 8px 2px; border-bottom: 2px solid #f0f4fa; }
+  .vrow img { width: 74px; height: 52px; object-fit: cover; border-radius: 10px; border: 2px solid #e3ecf7; }
+  .vrow .t { flex: 1; font-weight: 700; font-size: .9rem; }
+
+  .diorama { border-radius: 20px; overflow: hidden; border: 4px solid #fff; box-shadow: 0 8px 18px rgba(30,60,120,.25); }
+  .diorama img { width: 100%; display: block; aspect-ratio: 16/10; object-fit: cover; }
+  .dlg-bar { display: flex; gap: 10px; align-items: center; background: #fff; border-radius: 18px; padding: 10px 12px; margin: 12px 0; box-shadow: 0 6px 14px rgba(30,60,120,.14); }
+  .dlg-leo { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 3px solid #ffd166; background: #dff1ff; flex-shrink: 0; }
+  .dlg-info { flex: 1; }
+  .dlg-speakers { display: flex; gap: 8px; }
+  .spk { font-size: .8rem; font-weight: 800; background: #f0f4fa; padding: 4px 10px; border-radius: 14px; transition: all .2s; }
+  .spk.speaking { background: #ffe3a3; transform: scale(1.12); box-shadow: 0 0 0 3px #f4a30066; }
+
+/* v13: home movie */
+.home-movie{position:relative;}
+.leo-badge{position:absolute;top:8px;left:8px;background:rgba(0,0,0,.55);color:#ffd700;font-weight:800;padding:4px 12px;border-radius:999px;font-size:.8rem;letter-spacing:1px;}
+.dress-stage{position:relative;width:64%;max-width:300px;margin:0 auto;aspect-ratio:2/3;}
+.dress-base{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:1;}
+.dress-item{position:absolute;transform:translate(-50%,-50%);pointer-events:none;}
+
+.say-en{display:flex;align-items:center;gap:8px;background:#fff;border-radius:14px;padding:8px 12px;margin:10px 0;box-shadow:0 4px 10px rgba(30,60,120,.12);}
+.say-en .en-line{flex:1;font-weight:700;color:#1d5fd1;font-size:.92rem;}
+.mini-spk{border:none;background:#e63946;color:#fff;border-radius:50%;width:38px;height:38px;font-size:1.1rem;cursor:pointer;flex-shrink:0;}
+</style>
+</head>
+<body>
+<div class="phone">
+  <span class="cloud" style="top:70px;animation-delay:0s">☁️</span>
+  <span class="cloud" style="top:200px;animation-delay:5s;font-size:1.6rem">☁️</span>
+  <span class="cloud" style="top:340px;animation-delay:9s;font-size:2.6rem">☁️</span>
+  <div class="appbar" id="appbar">
+    <button class="back" onclick="goBack()">‹</button>
+    <h2 id="appTitle">Spidey English</h2>
+    <div class="coins">🕸️ <span id="coinCount">0</span></div>
+  </div>
+  <main id="main">
+    <section class="screen active" id="s-home">
+      <div class="diorama home-movie">
+        <video autoplay muted loop playsinline preload="auto" style="width:100%;display:block;aspect-ratio:16/10;object-fit:cover;background:#000"><source src="assets/a01.mp4" type="video/mp4"></video>
+        <div class="leo-badge">🕷️ LEO</div>
+      </div>
+      <div class="say-en"><span class="en-line">"Hello! My name is Leo. Let's study English together!"</span><button class="mini-spk" onclick="playHomeLine()">🔊</button><audio id="homeLineAudio" preload="auto"><source src="assets/a02.mp3" type="audio/mpeg"></audio></div>
+      <div class="equipped-chips" id="homeChips"></div>
+      <div class="speech" id="spideySay"></div>
+      <button class="btn red" onclick="show('s-map')">🗺️ Vào bản đồ thử thách</button>
+      <button class="btn green" onclick="show('s-closet')">🎒 Tủ đồ 3D của Spidey</button>
+      <button class="btn ghost" onclick="show('s-videos')">🎬 Rạp video</button>
+    </section>
+    <section class="screen" id="s-map">
+      <div class="mapwrap" id="mapwrap" style="background-image:url('assets/a03.webp')">
+        <div class="mnode" data-n="1" style="left:15%;top:13%"><span class="mlbl">Bài 1</span></div>
+        <div class="mnode" data-n="2" style="left:31%;top:21%"><span class="mlbl">Bài 2</span></div>
+        <div class="mnode" data-n="3" style="left:14%;top:31%"><span class="mlbl">Bài 3</span></div>
+        <div class="mnode" data-n="4" style="left:30%;top:40%"><span class="mlbl">Bài 4</span></div>
+        <div class="mnode boss" data-n="5" style="left:21%;top:52%"><span class="mlbl">BOSS 👑</span></div>
+        <div class="zonelock" style="left:72%;top:22%">🔒 Nhà Bếp<br><small>sắp ra mắt</small></div>
+        <div class="zonelock" style="left:24%;top:72%">🔒 Phòng Khách<br><small>sắp ra mắt</small></div>
+        <div class="zonelock" style="left:73%;top:73%">🔒 Phòng Ngủ<br><small>sắp ra mắt</small></div>
+      </div>
+      <div class="maplegend">
+        <span class="tag">🛁 Vùng Phòng Tắm</span><span class="tag blue">🦠 Băng Vi Khuẩn Grime</span>
+      </div>
+      <div class="card"><h4>💡 Mẹo</h4><p style="font-size:.9rem">Bấm vào nút <b>đỏ nhấp nháy</b> để vào bài mới. Bài có dấu ✅ bấm vào để <b>chơi lại / ôn tập</b> nhé!</p></div>
+    </section>
+    <section class="screen" id="s-lesson">
+      <div class="steps" id="lessonSteps"></div>
+      <div id="lessonBody"></div>
+    </section>
+    <section class="screen" id="s-battle">
+      <div class="card" style="text-align:center"><h4>⚔️ Spidey đại chiến King Grime!</h4>
+        <div class="scene"><video id="battleVid" controls playsinline preload="auto" style="width:100%;display:block;aspect-ratio:16/10;object-fit:cover;background:#000"><source src="assets/a04.mp4" type="video/mp4"></video></div>
+        <div class="speech" id="battleSay"><b>Spidey:</b> Xem mình quăng tơ đánh bại King Grime nè! 🕸️</div>
+        <button class="btn ghost" onclick="winBattle()">Bỏ qua ⏩</button>
+      </div>
+    </section>
+    <section class="screen" id="s-loot">
+      <div class="card loot-card">
+        <h3>🎉 Quái vật bị đánh bại!</h3>
+        <p style="color:#8aa0b8;font-size:.9rem">Rớt ra vật phẩm:</p>
+        <img class="itemimg" id="lootImg" src="assets/a05.webp" alt="vật phẩm">
+        <div><span class="rarity rare" id="lootRarity">HIẾM</span></div>
+        <h2 id="lootName">Giày Spidey</h2>
+        <button class="btn gold" onclick="equipLoot()">✨ Mặc ngay cho Spidey</button>
+        <button class="btn ghost" onclick="show('s-map')">Về bản đồ</button>
+      </div>
+    </section>
+    <section class="screen" id="s-closet">
+      <div class="card" style="text-align:center">
+        <h4>🕷️ Spidey của bạn</h4>
+        <div class="dress-stage" id="dressStage"><img class="dress-base" src="assets/a06.png" alt="Spidey"></div>
+        <div class="equipped-chips" id="closetChips" style="margin:8px 0"></div>
+        <h4>🎒 Chạm để mặc / tháo đồ cho Spidey</h4>
+        <div class="closet-grid" id="closetGrid"></div>
+      </div>
+    </section>
+    <section class="screen" id="s-videos">
+      <div class="card"><h4>🎬 Rạp video — xem lại thoải mái</h4><div id="videoList"></div></div>
+      <p style="color:#5b7a99;font-size:.85rem;text-align:center">Bản mẫu: video thật sẽ do mình làm bằng AI theo từng bài học.</p>
+    </section>
+    <section class="screen" id="s-parent">
+      <div id="pinGate">
+        <div class="card" style="text-align:center"><h4>🔒 Góc phụ huynh</h4>
+          <p style="font-size:.85rem;color:#8aa0b8">Nhập mã PIN (bản mẫu: 1234)</p>
+          <div class="pin-dots" id="pinDots">○○○○</div>
+          <div class="pinpad" id="pinpad"></div>
+        </div>
+      </div>
+      <div id="parentStats" style="display:none">
+        <div class="card"><h4>📊 Tiến độ của bé</h4><div id="statsBody"></div></div>
+        <div class="card"><h4>⏱️ Cài đặt</h4>
+          <div class="stat"><span>Giới hạn mỗi ngày</span><b>15 phút</b></div>
+          <div class="stat"><span>Âm thanh giọng đọc</span><b>Bật</b></div>
+          <div class="stat"><span>Đặt lại bản mẫu</span><button class="btn ghost" style="width:auto;padding:8px 16px;margin:0" onclick="resetProto()">Đặt lại</button></div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <nav class="tabbar" id="tabbar">
+    <button class="on" data-t="s-home" onclick="show('s-home')"><span class="ico">🕷️</span>Spidey</button>
+    <button data-t="s-map" onclick="show('s-map')"><span class="ico">🗺️</span>Bản đồ</button>
+    <button data-t="s-closet" onclick="show('s-closet')"><span class="ico">🎒</span>Tủ đồ</button>
+    <button data-t="s-videos" onclick="show('s-videos')"><span class="ico">🎬</span>Video</button>
+    <button data-t="s-parent" onclick="show('s-parent')"><span class="ico">👨‍👩‍👧</span>Phụ huynh</button>
+  </nav>
+  <div class="toast" id="toast"></div>
+</div>
+<script>
+/* ================= DATA ================= */
+const IMG = { L1:"assets/a07.webp", L2:"assets/a08.webp", L3:"assets/a09.webp", L4:"assets/a10.webp" };
+const LESSONS = [
+  { id:1, title:"Bài 1 · Wake up!", vid:"assets/a11.mp4", img:"assets/a12.webp", cap:"Bé thức dậy buổi sáng, mặt trời lên",
+    vocab:[["wake up","thức dậy","assets/a13.jpg"],["morning","buổi sáng","assets/a14.jpg"],["sun","mặt trời","assets/a15.jpg"],["bed","giường","assets/a16.jpg"]],
+    pyramid:["I","I wake up","I wake up now.","I wake up in the morning."],
+    game:{type:"tap", en:"Touch the sun!", vi:"Chạm vào mặt trời nhé!", options:["sun","bed","morning"], answer:0} },
+  { id:2, title:"Bài 2 · Brush your teeth", vid:"assets/a17.mp4", img:"assets/a18.webp", cap:"Bé đánh răng trước gương",
+    vocab:[["brush","đánh / chải","assets/a19.webp"],["teeth","răng","assets/a20.jpg"],["toothbrush","bàn chải","assets/a21.jpg"],["toothpaste","kem đánh răng","assets/a22.jpg"]],
+    pyramid:["This","This is","This is a toothbrush.","I brush my teeth."],
+    game:{type:"tap", en:"Touch the toothbrush!", vi:"Chạm vào bàn chải nhé!", options:["toothpaste","toothbrush","teeth"], answer:1} },
+  { id:3, title:"Bài 3 · Wash your face", vid:"assets/a23.mp4", img:"assets/a24.webp", cap:"Bé rửa mặt bằng nước mát",
+    vocab:[["face","khuôn mặt","assets/a25.jpg"],["water","nước","assets/a26.jpg"],["towel","khăn","assets/a27.jpg"],["wash","rửa","assets/a28.jpg"]],
+    pyramid:["I","I wash","I wash my face.","I wash my face with water."],
+    game:{type:"order", en:"Put the words in order!", vi:"Xếp các từ thành câu đúng nhé!", words:["face","wash","I"], answer:["I","wash","face"]} },
+  { id:4, title:"Bài 4 · Comb your hair", vid:"assets/a29.mp4", img:"assets/a30.webp", cap:"Bé chải tóc gọn gàng",
+    vocab:[["comb","cái lược","assets/a31.jpg"],["hair","tóc","assets/a32.jpg"],["mirror","gương","assets/a33.jpg"]],
+    pyramid:["I","I have","I have a comb.","I have a red comb."],
+    game:{type:"order", en:"Put the words in order!", vi:"Xếp các từ thành câu đúng nhé!", words:["comb","a","have","I"], answer:["I","have","a","comb"]} },
+  { id:5, title:"Bài 5 · BOSS: King Grime 👑", boss:true, img:"assets/a34.webp",
+    cap:"King Grime đang quậy phá phòng tắm!",
+    vocab:[["morning","buổi sáng","assets/a35.jpg"],["teeth","răng","assets/a36.jpg"],["water","nước","assets/a37.jpg"],["comb","cái lược","assets/a38.jpg"]],
+    quiz:[
+      {en:"Touch the sun!", vi:"Chạm vào mặt trời nhé!", options:["sun","bed","morning"], answer:0},
+      {en:"Touch the toothbrush!", vi:"Chạm vào bàn chải nhé!", options:["toothpaste","toothbrush","teeth"], answer:1},
+      {en:"Touch the water!", vi:"Chạm vào nước nhé!", options:["towel","face","water"], answer:2},
+      {en:"Touch the comb!", vi:"Chạm vào cái lược nhé!", options:["comb","mirror","hair"], answer:0}
+    ],
+    loot:{img:"assets/a39.webp", name:"Giày Spidey", rarity:"rare", rarityLabel:"HIẾM", itemId:"shoes"} }
+];
+const ITEMS = [
+  {id:"shoes", img:"assets/a40.webp", name:"Giày Spidey", rarity:"Hiếm"},
+  {id:"cape", img:"assets/a41.webp", name:"Áo choàng", rarity:"Hiếm", locked:true},
+  {id:"mask", img:"assets/a42.webp", name:"Mặt nạ", rarity:"Hiếm", locked:true},
+  {id:"gloves", img:"assets/a43.webp", name:"Găng tay", rarity:"Thường", locked:true}
+];
+/* ================= STATE ================= */
+let S = JSON.parse(localStorage.getItem("spidey_proto2") || '{"done":[],"coins":0,"items":[],"equipped":[]}');
+function save(){ localStorage.setItem("spidey_proto2", JSON.stringify(S)); }
+/* ================= HELPERS ================= */
+let fallbackTimer=null;
+function stopSpeak(){ try{ speechSynthesis.cancel(); }catch(e){} if(fallbackTimer){ clearInterval(fallbackTimer); fallbackTimer=null; } if(window._stopWords){ try{window._stopWords();}catch(e){} window._stopWords=null; } document.querySelectorAll(".w.speaking").forEach(w=>w.classList.remove("speaking")); }
+function speak(t, rate){ rate=rate||0.85; try{ stopSpeak(); const u=new SpeechSynthesisUtterance(t); u.lang="en-US"; u.rate=rate; speechSynthesis.speak(u); }catch(e){} }
+function toast(msg){ const el=document.getElementById("toast"); el.textContent=msg; el.style.display="block"; setTimeout(()=>el.style.display="none",2000); }
+function confetti(){ const box=document.querySelector(".phone"); const em=["🎉","⭐","🕸️","✨"];
+  for(let i=0;i<16;i++){ const s=document.createElement("div"); s.className="confetti"; s.textContent=em[i%4];
+    s.style.left=(8+Math.random()*84)+"%"; s.style.top="-12px"; box.appendChild(s); setTimeout(()=>s.remove(),2400); } }
+const TITLES = {"s-home":"Spidey English","s-map":"Bản đồ thử thách","s-lesson":"Bài học","s-battle":"Trận chiến!","s-loot":"Vật phẩm mới!","s-closet":"Tủ đồ Spidey","s-videos":"Rạp video","s-parent":"Góc phụ huynh"};
+function show(id){
+  stopSpeak();
+  const bv0=document.getElementById("battleVid"); if(bv0){bv0.pause();}
+  const lv0=document.getElementById("lessonVid"); if(lv0){lv0.pause();}
+  document.querySelectorAll(".screen").forEach(e=>e.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  document.getElementById("appTitle").textContent = TITLES[id]||"Spidey English";
+  document.getElementById("appbar").classList.toggle("show-back", ["s-lesson","s-battle","s-loot"].includes(id));
+  document.getElementById("tabbar").classList.toggle("hidden", ["s-lesson","s-battle","s-loot"].includes(id));
+  document.querySelectorAll(".tabbar button").forEach(b=>b.classList.toggle("on", b.dataset.t===id));
+  document.getElementById("main").scrollTop=0;
+  document.getElementById("coinCount").textContent=S.coins;
+  if(id==="s-home") renderHome();
+  if(id==="s-map") renderMap();
+  if(id==="s-closet") renderCloset();
+  if(id==="s-videos") renderVideos();
+}
+function goBack(){ show("s-map"); }
+function itemById(id){ return ITEMS.find(x=>x.id===id); }
+function chipsHTML(){ return S.equipped.map(id=>{ const it=itemById(id); return it?`<span class="chip"><img src="${it.img}"> ${it.name}</span>`:""; }).join(""); }
+/* ================= HOME / MAP ================= */
+function renderHome(){
+  document.getElementById("homeChips").innerHTML = chipsHTML() || '<span style="color:#5b7a99;font-size:.85rem">Chưa có đồ — vào bản đồ kiếm đồ nào!</span>';
+  const n=S.done.length;
+  document.getElementById("spideySay").innerHTML = n===0
+    ? "<b>Spidey:</b> Chào bạn! Mình là <b>Spidey</b>! Quái vật Grime đang quậy phá khắp nhà. Cùng học tiếng Anh để đánh bại chúng nhé! 🕷️"
+    : `<b>Spidey:</b> Tuyệt vời! Bạn đã thắng ${n}/5 thử thách vùng Phòng Tắm. ${n>=5?"Cả vùng sạch bóng rồi! 🎉":"Tiếp tục nào! 💪"}`;
+}
+function playHomeLine(){ const a=document.getElementById("homeLineAudio"); if(a){ a.currentTime=0; a.play().catch(()=>{}); } }
+function tryAutoHomeLine(){ const a=document.getElementById("homeLineAudio"); if(!a||a.dataset.done) return; a.play().then(()=>{ a.dataset.done="1"; }).catch(()=>{}); }
+function renderMap(){
+  document.querySelectorAll("#mapwrap .mnode").forEach(nd=>{
+    const i=parseInt(nd.dataset.n), L=LESSONS[i-1];
+    const done=S.done.includes(L.id);
+    const open=i===1 || S.done.includes(LESSONS[i-2].id);
+    nd.classList.remove("done","open","lock");
+    const lbl=nd.querySelector(".mlbl").outerHTML;
+    if(done){ nd.classList.add("done"); nd.innerHTML="✅"+lbl; nd.onclick=()=>{ toast("Chơi lại để ôn tập nhé!"); startLesson(L.id,true); }; }
+    else if(open){ nd.classList.add("open"); nd.innerHTML=(L.boss?"👑":i)+lbl; nd.onclick=()=>startLesson(L.id,false); }
+    else { nd.classList.add("lock"); nd.innerHTML="🔒"+lbl; nd.onclick=()=>toast("Hoàn thành bài trước để mở khóa!"); }
+  });
+}
+/* ================= CLOSET ================= */
+function renderCloset(){
+  renderDressUp();
+  document.getElementById("closetChips").innerHTML = chipsHTML() || '<span style="color:#5b7a99;font-size:.85rem">Spidey chưa mặc gì</span>';
+  const g=document.getElementById("closetGrid"); g.innerHTML="";
+  ITEMS.forEach(it=>{
+    const owned=S.items.includes(it.id), eq=S.equipped.includes(it.id);
+    const d=document.createElement("div");
+    d.className="closet-item"+(eq?" equipped":"")+(owned?"":" locked");
+    d.innerHTML='<img src="'+it.img+'" alt="'+it.name+'"><div class="nm">'+(owned?it.name:"???")+'</div><div class="rw">'+(owned?it.rarity:"Chưa mở khóa")+'</div>';
+    d.onclick=()=>{ if(!owned){ toast("Chơi tiếp để mở khóa món này!"); return; }
+      const ix=S.equipped.indexOf(it.id); if(ix>=0)S.equipped.splice(ix,1); else S.equipped.push(it.id);
+      save(); renderCloset(); };
+    g.appendChild(d);
+  });
+}
+const DRESS_POS={
+  mask:{img:"assets/a44.png",l:55.5,t:26,w:39,z:3},
+  cape:{img:"assets/a45.png",l:51,t:62,w:95,z:0},
+  glove_l:{img:"assets/a46.png",l:19.6,t:12.7,w:17,z:3},
+  glove_r:{img:"assets/a47.png",l:80.5,t:59.9,w:17,z:3},
+  shoe_l:{img:"assets/a48.png",l:23.3,t:90,w:24,z:3},
+  shoe_r:{img:"assets/a49.png",l:79.2,t:91,w:24,z:3}
+};
+function renderDressUp(){
+  const st=document.getElementById("dressStage"); if(!st) return;
+  st.querySelectorAll(".dress-item").forEach(e=>e.remove());
+  const add=(k)=>{ const p=DRESS_POS[k]; const im=document.createElement("img");
+    im.className="dress-item"; im.src=p.img;
+    im.style.cssText="left:"+p.l+"%;top:"+p.t+"%;width:"+p.w+"%;z-index:"+p.z; st.appendChild(im); };
+  if(S.equipped.includes("mask")) add("mask");
+  if(S.equipped.includes("cape")) add("cape");
+  if(S.equipped.includes("gloves")){ add("glove_l"); add("glove_r"); }
+  if(S.equipped.includes("shoes")){ add("shoe_l"); add("shoe_r"); }
+}
+/* ================= VIDEOS ================= */
+function renderVideos(){
+  document.getElementById("videoList").innerHTML = LESSONS.slice(0,4).map((L,i)=>{
+    const un=S.done.includes(L.id);
+    return `<div class="vrow"><img src="${L.img}"><div class="t">${L.title}</div><div>${un?"▶":"🔒"}</div></div>`; }).join("");
+}
+/* ================= PARENT ================= */
+let pin="";
+(function(){ const p=document.getElementById("pinpad");
+  ["1","2","3","4","5","6","7","8","9","⌫","0","✓"].forEach(k=>{
+    const b=document.createElement("button"); b.textContent=k;
+    b.onclick=()=>{ if(k==="⌫")pin=pin.slice(0,-1);
+      else if(k==="✓"){ if(pin==="1234"){ document.getElementById("pinGate").style.display="none"; document.getElementById("parentStats").style.display="block"; renderStats(); } else toast("Sai mã PIN!"); pin=""; }
+      else if(pin.length<4)pin+=k;
+      document.getElementById("pinDots").textContent="●".repeat(pin.length)+"○".repeat(4-pin.length); };
+    p.appendChild(b); });
+})();
+function renderStats(){
+  const words=S.done.reduce((a,id)=>{ const L=LESSONS.find(l=>l.id===id); return a+(L?L.vocab.length:0); },0);
+  document.getElementById("statsBody").innerHTML=
+    `<div class="stat"><span>Bài đã hoàn thành</span><b>${S.done.length}/5</b></div>
+     <div class="stat"><span>Từ vựng đã học</span><b>${words} từ</b></div>
+     <div class="stat"><span>Xu spider-coin</span><b>🕸️ ${S.coins}</b></div>
+     <div class="stat"><span>Vật phẩm sưu tầm</span><b>${S.items.length}/${ITEMS.length}</b></div>`;
+}
+function resetProto(){ localStorage.removeItem("spidey_proto2"); location.reload(); }
+/* ================= LESSON ENGINE ================= */
+let cur=null, step=0, qIdx=0, built=[], replay=false, heardLines=new Set();
+function startLesson(id, isReplay){ cur=LESSONS.find(l=>l.id===id); replay=!!isReplay; step=0; qIdx=0; built=[]; heardLines=new Set(); show("s-lesson"); renderStep(); }
+function stepsOf(){ return cur.boss ? ["Ôn từ","Thử thách","Đánh boss"] : ["Xem phim","Từ mới","Đọc pyramid","Mini-game"]; }
+function renderStep(){
+  const steps=stepsOf(), bar=document.getElementById("lessonSteps");
+  bar.innerHTML=steps.map((s,i)=>`<span class="${i<step?"done":i===step?"now":""}" title="${s}"></span>`).join("");
+  document.getElementById("appTitle").textContent=cur.title+(replay?" (ôn tập)":"");
+  const B=document.getElementById("lessonBody");
+  if(cur.boss){ renderBossStep(B); return; }
+  if(step===0){
+    B.innerHTML=`<div class="card"><h4>🎬 Phim mở đầu</h4>
+      <div class="scene"><video id="lessonVid" controls playsinline preload="metadata" poster="${cur.img}" style="width:100%;display:block;aspect-ratio:16/10;object-fit:cover;background:#000"><source src="${cur.vid}" type="video/mp4"></video><small>${cur.cap}</small></div>
+      <p style="font-size:.85rem;color:#5b7a99;margin-top:8px">🎥 Phim có lồng tiếng — xem rồi bấm tiếp nhé!</p></div>
+      <button class="btn red" onclick="nextStep()">Xem xong rồi ▶</button>`;
+    setTimeout(()=>{ const v=document.getElementById("lessonVid"); if(v){ v.play().catch(()=>{}); } }, 400);
+  } else if(step===1){
+    B.innerHTML=`<div class="card"><h4>📖 Từ mới — chạm thẻ để nghe</h4>
+      <div class="flash">${cur.vocab.map(v=>`<div class="flashcard" style="background-image:url('${v[2]}')" onclick="speak('${v[0]}',0.85)"><div class="cap"><div class="en">${v[0]} 🔊</div><div class="vi">${v[1]}</div></div></div>`).join("")}</div></div>
+      <button class="btn red" onclick="nextStep()">Học xong ▶</button>`;
+  } else if(step===2){
+    B.innerHTML=`<div class="card"><h4>🗣️ Pyramid Reading</h4>
+      <p style="font-size:.88rem;color:#5b7a99">Chạm từng dòng để nghe, hoặc bấm nút để Spidey đọc cả bài. Spidey đọc <b>từng chữ một</b> — chữ nào đang đọc sẽ <b style="color:#e63946">phóng to đổi màu</b> đúng nhịp!</p>
+      <div class="pyr">${cur.pyramid.map((p,i)=>`<div class="pyr-line" data-i="${i}">${p.split(" ").map(w=>`<span class="w">${w}</span>`).join(" ")}<span class="tick">✓</span></div>`).join("")}</div>
+      <button class="btn green" id="readAllBtn" onclick="readPyramid()">🔊 Spidey đọc cả bài</button></div>
+      <button class="btn red" id="pyrDone" onclick="pyrDone()" disabled>Đọc xong ▶</button>`;
+    document.querySelectorAll(".pyr-line").forEach(el=>{
+      el.onclick=()=>{ const i=parseInt(el.dataset.i); speakLine(el, cur.pyramid[i], ()=>{ heardLines.add(i); el.classList.add("heard"); checkPyrDone(); }); };
+    });
+  } else { startGame(B, ()=>finishLesson()); }
+}
+function checkPyrDone(){ if(heardLines.size===cur.pyramid.length) document.getElementById("pyrDone").disabled=false; }
+function pyrDone(){ speak(cur.pyramid[cur.pyramid.length-1], 0.9); nextStep(); }
+function nextStep(){ stopSpeak(); const lv=document.getElementById("lessonVid"); if(lv){lv.pause();} step++; if(step>=stepsOf().length) finishLesson(); else renderStep(); }
+/* ---- pyramid: Spidey doc TUNG CHU MOT, highlight dong bo tuyet doi ---- */
+function speakWords(lineEl, words, onDone){
+  stopSpeak();
+  const spans=[...lineEl.querySelectorAll(".w")];
+  let i=0, stopped=false;
+  window._stopWords=()=>{ stopped=true; };
+  const clear=()=>{ spans.forEach(s=>s.classList.remove("speaking")); };
+  const next=()=>{
+    if(stopped) return;
+    if(i>=words.length){ setTimeout(()=>{ clear(); onDone&&onDone(); }, 300); return; }
+    spans.forEach(s=>s.classList.remove("speaking"));
+    if(spans[i]) spans[i].classList.add("speaking");
+    const u=new SpeechSynthesisUtterance(words[i]);
+    u.lang="en-US"; u.rate=0.95;
+    u.onend=()=>{ i++; setTimeout(next, 70); };
+    u.onerror=()=>{ i++; setTimeout(next, 70); };
+    try{ speechSynthesis.speak(u); }catch(e){ i++; setTimeout(next,70); }
+  };
+  next();
+}
+function speakLine(lineEl, text, onDone){ speakWords(lineEl, text.split(" "), onDone); }
+function readPyramid(){
+  const btn=document.getElementById("readAllBtn"); btn.disabled=true;
+  const lines=[...document.querySelectorAll(".pyr-line")]; let i=0;
+  const fluentLast=()=>{
+    stopSpeak();
+    const el=lines[lines.length-1];
+    el.querySelectorAll(".w").forEach(w=>w.classList.add("speaking"));
+    const u=new SpeechSynthesisUtterance(cur.pyramid[cur.pyramid.length-1]);
+    u.lang="en-US"; u.rate=0.9;
+    const done=()=>{ el.querySelectorAll(".w").forEach(w=>w.classList.remove("speaking")); btn.disabled=false; };
+    u.onend=done; u.onerror=done;
+    try{ speechSynthesis.speak(u); }catch(e){ done(); }
+  };
+  const next=()=>{
+    if(i>=lines.length){ setTimeout(fluentLast, 350); return; }
+    const el=lines[i], li=parseInt(el.dataset.i);
+    speakWords(el, cur.pyramid[li].split(" "), ()=>{ heardLines.add(li); el.classList.add("heard"); checkPyrDone(); i++; setTimeout(next, 300); });
+  };
+  next();
+}
+/* ================= MINI-GAMES (English instructions, auto-read) ================= */
+let gameRounds=[], gameIdx=0;
+function buildRounds(){
+  const rs=[], vs=[...cur.vocab];
+  if(cur.game.type==="tap"){
+    vs.sort(()=>Math.random()-.5).forEach(v=>{
+      const others=cur.vocab.filter(x=>x[0]!==v[0]).sort(()=>Math.random()-.5).slice(0,2).map(x=>x[0]);
+      const opts=[v[0],...others].sort(()=>Math.random()-.5);
+      rs.push({type:"tap",en:"Touch the "+v[0]+"!",vi:'Chạm vào "'+v[1]+'" nhé!',options:opts,answer:opts.indexOf(v[0])});
+    });
+  }else{
+    (function(){ const pool=cur.pyramid.filter(l=>l.trim().split(/\s+/).length>=2); return (pool.length?pool:cur.pyramid); })().sort(()=>Math.random()-.5).slice(0,3).forEach(line=>{
+      const words=line.split(" ");
+      rs.push({type:"order",en:"Put the words in order!",vi:"Xếp các từ thành câu đúng nhé!",words:[...words],answer:words});
+    });
+  }
+  return rs;
+}
+function startGame(B,onWin){ gameRounds=buildRounds(); gameIdx=0; window._gameWin=onWin; renderGameRound(B); }
+function renderGameRound(B){
+  B=B||document.getElementById("lessonBody");
+  const g=gameRounds[gameIdx]; window._g=g; built=[];
+  let inner='<div class="card" style="text-align:center"><h4>🎮 Mini-game — Câu '+(gameIdx+1)+'/'+gameRounds.length+'</h4>'
+    +'<div class="scene" style="margin-bottom:10px"><img src="'+cur.img+'" alt=""></div>'
+    +'<div class="game-en">"'+g.en+'" <button class="btn ghost" style="padding:2px 10px;margin-left:6px" onclick="replayQ()">🔊</button></div><div class="game-vi">'+g.vi+'</div>';
+  if(g.type==="tap"){
+    inner+='<div class="word-opts">'+g.options.map((o,i)=>'<button class="word-opt" onclick="tapAnswer(this,'+i+','+g.answer+')">'+o+'</button>').join("")+'</div></div>';
+    B.innerHTML=inner;
+  }else{
+    const words=[...g.words].sort(()=>Math.random()-.5);
+    inner+='<div class="sentence-out" id="sentOut"><span style="color:#8aa0b8">...</span></div>'
+      +'<div class="word-bank">'+words.map(w=>'<button onclick="pickWord(this,\''+w+'\')">'+w+'</button>').join("")+'</div>'
+      +'<button class="btn ghost" onclick="built=[];renderGameRound()">↩ Làm lại</button></div>';
+    B.innerHTML=inner;
+  }
+  window._win=()=>{ gameIdx++; if(gameIdx>=gameRounds.length){ const f=window._gameWin; window._gameWin=null; f&&f(); } else renderGameRound(); };
+  speak(g.en,0.85);
+}
+function replayQ(){ const g=window._g; if(g) speak(g.en,0.85); }
+function tapAnswer(el, i, answer){
+  if(i===answer){ el.classList.add("right"); speak("Great job!", 1); confetti(); setTimeout(()=>{ const w=window._win; window._win=null; w&&w(); },1000); }
+  else { el.classList.add("wrong"); speak("Try again!", 0.9); setTimeout(()=>el.classList.remove("wrong"),600); }
+}
+function pickWord(btn, w){
+  btn.classList.add("used"); btn.disabled=true; built.push(w);
+  document.getElementById("sentOut").innerHTML=built.map(x=>`<span class="chip">${x}</span>`).join("");
+  const g=window._g;
+  if(built.length===g.answer.length){
+    if(built.join(" ")===g.answer.join(" ")){ speak("Excellent! "+g.answer.join(" "), 0.9); confetti(); setTimeout(()=>{ const fn=window._win; window._win=null; fn&&fn(); },1200); }
+    else { speak("Try again!", 0.9); toast("Chưa đúng, thử lại nào!"); setTimeout(()=>renderGame(document.getElementById("lessonBody"),g,window._win),1000); }
+  }
+}
+function finishLesson(){
+  stopSpeak();
+  if(replay){ toast("Ôn tập xong! Giỏi lắm! 🎉"); }
+  else { if(!S.done.includes(cur.id)){ S.done.push(cur.id); S.coins+=10; } save(); confetti(); speak("Awesome!",1); toast("Hoàn thành! +10 🕸️"); }
+  setTimeout(()=>show("s-map"), 1500);
+}
+/* ================= BOSS ================= */
+function renderBossStep(B){
+  if(step===0){
+    B.innerHTML=`<div class="card"><h4>📖 Ôn từ nhanh — chạm thẻ để nghe</h4>
+      <div class="flash">${cur.vocab.map(v=>`<div class="flashcard" style="background-image:url('${v[2]}')" onclick="speak('${v[0]}',0.85)"><div class="cap"><div class="en">${v[0]} 🔊</div><div class="vi">${v[1]}</div></div></div>`).join("")}</div></div>
+      <button class="btn red" onclick="nextStep()">Sẵn sàng đánh boss ▶</button>`; return;
+  }
+  const g=cur.quiz[qIdx];
+  B.innerHTML=`<div class="card" style="text-align:center"><h4>⚔️ Thử thách ${qIdx+1}/${cur.quiz.length}</h4>
+    <div class="scene" style="margin-bottom:10px"><img src="${cur.img}" alt=""></div>
+    <div class="game-en">"${g.en}" 🔊</div><div class="game-vi">${g.vi}</div>
+    <div class="word-opts">${g.options.map((o,i)=>`<button class="word-opt" onclick="tapAnswer(this,${i},${g.answer})">${o}</button>`).join("")}</div></div>`;
+  window._win=()=>{ qIdx++; if(qIdx>=cur.quiz.length) startBattle(); else renderStep(); };
+  speak(g.en, 0.9);
+}
+function startBattle(){
+  show("s-battle");
+  const v=document.getElementById("battleVid");
+  document.getElementById("battleSay").innerHTML="<b>Spidey:</b> Xem mình quăng tơ đánh bại King Grime nè! 🕸️";
+  v.currentTime=0; v.onended=()=>winBattle();
+  setTimeout(()=>{ v.play().catch(()=>{}); },300);
+  speak("Let's fight!",1);
+}
+function winBattle(){
+  document.getElementById("battleSay").innerHTML="<b>Spidey:</b> Thắng rồi! Quái vật rớt ra vật phẩm... 🎉";
+  confetti(); speak("We win!", 1);
+  setTimeout(()=>{
+    if(!replay){
+      if(!S.done.includes(cur.id)){ S.done.push(cur.id); S.coins+=20; }
+      const it=itemById(cur.loot.itemId); it.locked=false;
+      if(!S.items.includes(it.id)) S.items.push(it.id);
+      save();
+    }
+    document.getElementById("lootImg").src=cur.loot.img;
+    document.getElementById("lootName").textContent=cur.loot.name;
+    const r=document.getElementById("lootRarity"); r.textContent=cur.loot.rarityLabel; r.className="rarity "+cur.loot.rarity;
+    show("s-loot"); confetti();
+  },1800);
+}
+function equipLoot(){ const id=cur.loot.itemId; if(!S.equipped.includes(id)) S.equipped.push(id); save(); toast("Đã mặc "+cur.loot.name+"!"); show("s-closet"); }
+/* ================= INIT ================= */
+renderHome(); renderMap();
+if('serviceWorker' in navigator){ window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); }); }
+tryAutoHomeLine();
+["pointerdown","keydown","touchend"].forEach(ev=>document.addEventListener(ev,tryAutoHomeLine,{once:true}));
+</script>
+</div>
+</body>
+</html>
