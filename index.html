@@ -212,7 +212,7 @@
     </section>
     <section class="screen" id="s-battle">
       <div class="card" style="text-align:center"><h4>⚔️ Spidey đại chiến King Grime!</h4>
-        <div class="scene"><video id="battleVid" controls playsinline preload="auto" style="width:100%;display:block;aspect-ratio:16/10;object-fit:cover;background:#000"><source src="assets/a04.mp4" type="video/mp4"></video></div>
+        <div class="scene"><video id="battleVid" controls playsinline preload="auto" style="width:100%;display:block;aspect-ratio:9/16;object-fit:contain;background:#000;max-height:62vh;margin:0 auto"><source src="assets/a04.mp4" type="video/mp4"></video></div>
         <div class="speech" id="battleSay"><b>Spidey:</b> Xem mình quăng tơ đánh bại King Grime nè! 🕸️</div>
         <button class="btn ghost" onclick="winBattle()">Bỏ qua ⏩</button>
       </div>
@@ -434,7 +434,7 @@ function renderStep(){
   if(cur.boss){ renderBossStep(B); return; }
   if(step===0){
     B.innerHTML=`<div class="card"><h4>🎬 Phim mở đầu</h4>
-      <div class="scene"><video id="lessonVid" controls playsinline preload="metadata" poster="${cur.img}" style="width:100%;display:block;aspect-ratio:16/10;object-fit:cover;background:#000"><source src="${cur.vid}" type="video/mp4"></video><small>${cur.cap}</small></div>
+      <div class="scene"><video id="lessonVid" controls playsinline preload="metadata" poster="${cur.img}" style="width:100%;display:block;aspect-ratio:9/16;object-fit:contain;background:#000;max-height:62vh;margin:0 auto"><source src="${cur.vid}" type="video/mp4"></video><small>${cur.cap}</small></div>
       <p style="font-size:.85rem;color:#5b7a99;margin-top:8px">🎥 Phim có lồng tiếng — xem rồi bấm tiếp nhé!</p></div>
       <button class="btn red" onclick="nextStep()">Xem xong rồi ▶</button>`;
     setTimeout(()=>{ const v=document.getElementById("lessonVid"); if(v){ v.play().catch(()=>{}); } }, 400);
