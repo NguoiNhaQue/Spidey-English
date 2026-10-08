@@ -201,7 +201,7 @@
       <div class="equipped-chips" id="homeChips"></div>
       <div class="speech" id="spideySay"></div>
       <button class="btn red" onclick="show('s-map')">🗺️ Vào bản đồ thử thách</button>
-      <button class="btn green" onclick="show('s-closet')">🎒 Tủ đồ 3D của Spidey</button>
+      <button class="btn green" onclick="show('s-closet')">🎒 Tủ đồ của bạn</button>
       <button class="btn ghost" onclick="show('s-videos')">🎬 Rạp video</button>
     </section>
     <section class="screen" id="s-map">
@@ -244,11 +244,12 @@
     </section>
     <section class="screen" id="s-closet">
       <div class="card" style="text-align:center">
-        <h4>🕷️ Spidey 3D của bạn</h4>
-        <p style="font-size:.8rem;color:#5b7a99">Kéo để xoay • Chụm để zoom</p>
-        <div id="closet3d" style="width:100%;height:380px;border-radius:16px;overflow:hidden;background:radial-gradient(circle at 50% 30%,#3a5ac8,#1a2a6c);touch-action:none;margin:8px 0"></div>
-        <div class="equipped-chips" id="closetChips" style="margin:8px 0"></div>
-        <h4>🎒 Chạm để mặc / tháo đồ cho Spidey</h4>
+        <h4>🕷️ Tủ đồ của bạn</h4>
+        <p style="font-size:.8rem;color:#5b7a99">Chạm để mặc bộ đồ cho nhân vật</p>
+        <div class="dress-stage" style="margin:8px auto">
+          <img class="dress-base" id="closetHero" src="demo/assets_sets/set_base.png" alt="hero" style="position:relative">
+        </div>
+        <h4>🎒 Chạm để mặc bộ đồ</h4>
         <div class="closet-grid" id="closetGrid"></div>
       </div>
     </section>
@@ -307,17 +308,18 @@ const LESSONS = [
     cap:"King Grime đang quậy phá phòng tắm!",
     vocab:[["wake up","thức dậy","assets/a13.jpg"],["morning","buổi sáng","assets/a14.jpg"],["sun","mặt trời","assets/a15.jpg"],["bed","giường","assets/a16.jpg"],["brush","đánh / chải","assets/a19.webp"],["teeth","răng","assets/a20.jpg"],["toothbrush","bàn chải","assets/a21.jpg"],["toothpaste","kem đánh răng","assets/a22.jpg"],["face","khuôn mặt","assets/a25.jpg"],["water","nước","assets/a26.jpg"],["towel","khăn","assets/a27.jpg"],["wash","rửa","assets/a28.jpg"],["comb","cái lược","assets/a31.jpg"],["hair","tóc","assets/a32.jpg"],["mirror","gương","assets/a33.jpg"]],
     quiz:[{en:"Touch the wake up!",vi:"Chạm vào thức dậy nhé!",options:["sun","wash","wake up"],answer:2},{en:"Touch the morning!",vi:"Chạm vào buổi sáng nhé!",options:["brush","mirror","morning"],answer:2},{en:"Touch the sun!",vi:"Chạm vào mặt trời nhé!",options:["wash","sun","comb"],answer:1},{en:"Touch the bed!",vi:"Chạm vào giường nhé!",options:["towel","toothpaste","bed"],answer:2},{en:"Touch the brush!",vi:"Chạm vào đánh / chải nhé!",options:["morning","bed","brush"],answer:2},{en:"Touch the teeth!",vi:"Chạm vào răng nhé!",options:["teeth","water","bed"],answer:0},{en:"Touch the toothbrush!",vi:"Chạm vào bàn chải nhé!",options:["toothbrush","bed","face"],answer:0},{en:"Touch the toothpaste!",vi:"Chạm vào kem đánh răng nhé!",options:["wake up","hair","toothpaste"],answer:2},{en:"Touch the face!",vi:"Chạm vào khuôn mặt nhé!",options:["teeth","brush","face"],answer:2},{en:"Touch the water!",vi:"Chạm vào nước nhé!",options:["hair","teeth","water"],answer:2},{en:"Touch the towel!",vi:"Chạm vào khăn nhé!",options:["towel","morning","toothbrush"],answer:0},{en:"Touch the wash!",vi:"Chạm vào rửa nhé!",options:["brush","water","wash"],answer:2},{en:"Touch the comb!",vi:"Chạm vào cái lược nhé!",options:["morning","comb","face"],answer:1},{en:"Touch the hair!",vi:"Chạm vào tóc nhé!",options:["hair","face","brush"],answer:0},{en:"Touch the mirror!",vi:"Chạm vào gương nhé!",options:["water","mirror","bed"],answer:1}],
-    loot:{img:"assets/a39.webp", name:"Giày Spidey", rarity:"rare", rarityLabel:"HIẾM", itemId:"shoes"} }
+    loot:{img:"demo/assets_sets/set_cool.png", name:"Bộ ngầu", rarity:"rare", rarityLabel:"HIẾM", setId:"cool"} }
 ];
-const ITEMS = [
-  {id:"shoes", img:"assets/a40.webp", name:"Giày Spidey", rarity:"Hiếm"},
-  {id:"cape", img:"assets/a41.webp", name:"Áo choàng", rarity:"Hiếm", locked:true},
-  {id:"mask", img:"assets/a42.webp", name:"Kính sao", rarity:"Hiếm", locked:true},
-  {id:"gloves", img:"assets/a43.webp", name:"Găng tay", rarity:"Thường", locked:true},
-  {id:"hat", img:"assets/a40.webp", name:"Mũ tiệc", rarity:"Đặc biệt", locked:true}
+const SETS = [
+  {id:"base", img:"demo/assets_sets/set_base.png", name:"Bộ cơ bản", desc:"Trang phục mặc định"},
+  {id:"cool", img:"demo/assets_sets/set_cool.png", name:"Bộ ngầu", desc:"Giày + Kính", locked:true},
+  {id:"fun", img:"demo/assets_sets/set_fun.png", name:"Bộ vui", desc:"Giày + Găng + Mũ", locked:true},
+  {id:"full", img:"demo/assets_sets/set_full.png", name:"Bộ siêu sao", desc:"Full 6 món", locked:true}
 ];
 /* ================= STATE ================= */
-let S = JSON.parse(localStorage.getItem("spidey_proto2") || '{"done":[],"coins":0,"items":[],"equipped":[]}');
+let S = JSON.parse(localStorage.getItem("spidey_proto2") || '{"done":[],"coins":0,"sets":["base"],"activeSet":"base"}');
+// Migrate old state (items/equipped) to new (sets/activeSet)
+if(!S.sets){ S.sets=["base"]; S.activeSet="base"; save(); }
 function save(){ localStorage.setItem("spidey_proto2", JSON.stringify(S)); }
 /* ================= HELPERS ================= */
 let fallbackTimer=null;
@@ -422,8 +424,8 @@ function show(id){
   if(id==="s-videos") renderVideos();
 }
 function goBack(){ show("s-map"); }
-function itemById(id){ return ITEMS.find(x=>x.id===id); }
-function chipsHTML(){ return S.equipped.map(id=>{ const it=itemById(id); return it?`<span class="chip"><img src="${it.img}"> ${it.name}</span>`:""; }).join(""); }
+function setById(id){ return SETS.find(x=>x.id===id); }
+function chipsHTML(){ const st=setById(S.activeSet); return st&&st.id!=="base"?`<span class="chip"><img src="${st.img}"> ${st.name}</span>`:""; }
 /* ================= HOME / MAP ================= */
 function renderHome(){
   document.getElementById("homeChips").innerHTML = chipsHTML() || '<span style="color:#5b7a99;font-size:.85rem">Chưa có đồ — vào bản đồ kiếm đồ nào!</span>';
@@ -450,110 +452,21 @@ function renderMap(){
 }
 /* ================= CLOSET ================= */
 function renderCloset(){
-  renderDressUp();
-  document.getElementById("closetChips").innerHTML = chipsHTML() || '<span style="color:#5b7a99;font-size:.85rem">Spidey chưa mặc gì</span>';
+  // Show active set on hero
+  const active = SETS.find(s=>s.id===S.activeSet) || SETS[0];
+  document.getElementById("closetHero").src = active.img;
+  // Grid of sets
   const g=document.getElementById("closetGrid"); g.innerHTML="";
-  ITEMS.forEach(it=>{
-    const owned=S.items.includes(it.id), eq=S.equipped.includes(it.id);
+  SETS.forEach(st=>{
+    const owned=S.sets.includes(st.id), eq=S.activeSet===st.id;
     const d=document.createElement("div");
     d.className="closet-item"+(eq?" equipped":"")+(owned?"":" locked");
-    d.innerHTML='<img src="'+it.img+'" alt="'+it.name+'"><div class="nm">'+(owned?it.name:"???")+'</div><div class="rw">'+(owned?it.rarity:"Chưa mở khóa")+'</div>';
-    d.onclick=()=>{ if(!owned){ toast("Chơi tiếp để mở khóa món này!"); return; }
-      const ix=S.equipped.indexOf(it.id); if(ix>=0)S.equipped.splice(ix,1); else S.equipped.push(it.id);
-      save(); sync3DItems(); renderCloset(); };
+    d.innerHTML='<img src="'+st.img+'" alt="'+st.name+'"><div class="nm">'+(owned?st.name:"???")+'</div><div class="rw">'+(owned?st.desc:"Chưa mở khóa")+'</div>';
+    d.onclick=()=>{ if(!owned){ toast("Đánh boss để mở khóa bộ này!"); return; }
+      S.activeSet=st.id; save(); renderCloset(); toast("Đã mặc "+st.name+"!"); };
     g.appendChild(d);
   });
 }
-/* ============ 3D CLOSET ============ */
-let _c3d = null;
-function initCloset3D(){
-  const el = document.getElementById("closet3d");
-  if(!el || typeof THREE === "undefined" || typeof THREE.GLTFLoader === "undefined") return;
-  if(_c3d && _c3d.el === el) { sync3DItems(); return; }
-  // cleanup old
-  if(_c3d && _c3d.renderer){ try{ _c3d.renderer.dispose(); }catch(e){} el.innerHTML=""; }
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(40, el.clientWidth/el.clientHeight, 0.1, 100);
-  camera.position.set(0, 1.2, 4.5); camera.lookAt(0, 0.8, 0);
-  const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
-  renderer.setSize(el.clientWidth||300, el.clientHeight||380);
-  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
-  el.appendChild(renderer.domElement);
-  scene.add(new THREE.AmbientLight(0xffffff, 0.9));
-  const key = new THREE.DirectionalLight(0xffffff, 1.2); key.position.set(3,6,4); scene.add(key);
-  const rim = new THREE.DirectionalLight(0xaaccff, 0.5); rim.position.set(-4,3,-3); scene.add(rim);
-  const state = {el, scene, camera, renderer, spidey:null, items:{}, rotY:0, rotX:0};
-  _c3d = state;
-  // drag rotate
-  let dragging=false, px=0, py=0;
-  const cv = renderer.domElement; cv.style.touchAction="none";
-  cv.addEventListener("pointerdown", e=>{ dragging=true; px=e.clientX; py=e.clientY; try{cv.setPointerCapture(e.pointerId);}catch(_){} });
-  addEventListener("pointermove", e=>{ if(!dragging||!state.spidey) return;
-    state.rotY += (e.clientX-px)*0.012; state.rotX += (e.clientY-py)*0.006;
-    state.rotX = Math.max(-0.6, Math.min(0.6, state.rotX)); px=e.clientX; py=e.clientY; });
-  addEventListener("pointerup", ()=>{ dragging=false; });
-  // load model
-  new THREE.GLTFLoader().load("assets/spidey_chibi.glb", gltf=>{
-    const m = gltf.scene;
-    const box = new THREE.Box3().setFromObject(m);
-    const center = box.getCenter(new THREE.Vector3());
-    const size = box.getSize(new THREE.Vector3());
-    const sc = 2.2 / (size.y||1);
-    m.scale.set(sc,sc,sc);
-    m.position.sub(center.multiplyScalar(sc)); m.position.y += 1.1;
-    scene.add(m); state.spidey = m; state.boxSize = size.clone().multiplyScalar(sc);
-    build3DItems(state); sync3DItems();
-  }, undefined, err=>{ console.warn("3D load fail", err); });
-  const clock = new THREE.Clock();
-  (function animate(){
-    requestAnimationFrame(animate);
-    if(!state.renderer) return;
-    const t = clock.getElapsedTime();
-    if(state.spidey){ state.spidey.rotation.y = state.rotY + Math.sin(t*0.5)*0.03;
-      state.spidey.rotation.x = state.rotX;
-      state.spidey.position.y = 1.1 + Math.sin(t*1.8)*0.03; }
-    renderer.render(scene, camera);
-  })();
-}
-function build3DItems(st){
-  // Model local coords: spans y -1.1 to +1.1, head at top (chibi big head)
-  // Party hat
-  const hat = new THREE.Group();
-  const cone = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.42, 20),
-    new THREE.MeshStandardMaterial({color:0xffd93b, roughness:.4}));
-  cone.position.y = 0.21; hat.add(cone);
-  const pom = new THREE.Mesh(new THREE.SphereGeometry(0.06, 12, 12),
-    new THREE.MeshStandardMaterial({color:0xff6b6b}));
-  pom.position.y = 0.44; hat.add(pom);
-  hat.position.set(0.06, 1.15, 0); hat.rotation.z = -0.18; hat.visible = false;
-  st.spidey.add(hat); st.items.hat = hat;
-  // Star glasses (round gold frames)
-  const gg = new THREE.Group();
-  const gm = new THREE.MeshStandardMaterial({color:0xffd93b, roughness:.3, metalness:.4});
-  [-1,1].forEach(s=>{
-    const lens = new THREE.Mesh(new THREE.TorusGeometry(0.1, 0.028, 10, 20), gm);
-    lens.position.x = 0.17*s; gg.add(lens);
-  });
-  const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.08,0.03,0.03), gm); gg.add(bridge);
-  gg.position.set(0, 0.72, 0.42); gg.visible = false;
-  st.spidey.add(gg); st.items.glasses = gg;
-  // Cape
-  const shape = new THREE.Shape();
-  shape.moveTo(-0.38,0); shape.quadraticCurveTo(0,-1.2,0.38,0); shape.lineTo(-0.38,0);
-  const cape = new THREE.Mesh(new THREE.ShapeGeometry(shape),
-    new THREE.MeshStandardMaterial({color:0x8b1a1a, side:THREE.DoubleSide, roughness:.7}));
-  cape.position.set(0, 0.45, -0.3); cape.visible = false;
-  st.spidey.add(cape); st.items.cape = cape;
-}
-function sync3DItems(){
-  if(!_c3d || !_c3d.items) return;
-  const eq = S.equipped || [];
-  // Map old item ids to 3D items: mask->glasses, cape->cape, hat (new)
-  if(_c3d.items.hat) _c3d.items.hat.visible = eq.includes("hat");
-  if(_c3d.items.glasses) _c3d.items.glasses.visible = eq.includes("mask");
-  if(_c3d.items.cape) _c3d.items.cape.visible = eq.includes("cape");
-}
-function renderDressUp(){ initCloset3D(); }
 /* ================= VIDEOS ================= */
 function renderVideos(){
   document.getElementById("videoList").innerHTML = LESSONS.slice(0,4).map((L,i)=>{
@@ -810,8 +723,8 @@ function winBattle(){
   setTimeout(()=>{
     if(!replay){
       if(!S.done.includes(cur.id)){ S.done.push(cur.id); S.coins+=20; }
-      const it=itemById(cur.loot.itemId); it.locked=false;
-      if(!S.items.includes(it.id)) S.items.push(it.id);
+      const setId=cur.loot.setId;
+      if(!S.sets.includes(setId)) S.sets.push(setId);
       save();
     }
     document.getElementById("lootImg").src=cur.loot.img;
@@ -820,7 +733,7 @@ function winBattle(){
     show("s-loot"); confetti();
   },1800);
 }
-function equipLoot(){ const id=cur.loot.itemId; if(!S.equipped.includes(id)) S.equipped.push(id); save(); toast("Đã mặc "+cur.loot.name+"!"); show("s-closet"); }
+function equipLoot(){ const id=cur.loot.setId; S.activeSet=id; if(!S.sets.includes(id)) S.sets.push(id); save(); toast("Đã mặc "+cur.loot.name+"!"); show("s-closet"); }
 /* ================= INIT ================= */
 renderHome(); renderMap();
 if('serviceWorker' in navigator){ window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); }); }
