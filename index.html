@@ -136,7 +136,7 @@
   .closet-item.locked img { filter: grayscale(1) brightness(.4); }
   /* Beautiful 2D closet */
   .closet-hero {
-    background: url('assets/apartment_bg.jpg') center/cover no-repeat;
+    background: url('assets/bedroom_bg.jpg') center/cover no-repeat;
     border: none; position: relative; overflow: hidden;
     min-height: 480px;
   }
@@ -295,7 +295,7 @@
       <div class="card closet-hero">
         <h4>🕷️ Tủ đồ của Spidey</h4>
         <div class="dress-stage" id="dressStage">
-          <img class="dress-base" src="assets/a06.png" alt="Spidey">
+          <img class="dress-base" src="assets/a06_fixed.png" alt="Spidey">
         </div>
         <div class="equipped-chips" id="closetChips"></div>
       </div>
@@ -366,7 +366,8 @@ const ITEMS = [
   {id:"cape", img:"assets/a41.webp", name:"Áo choàng", rarity:"Hiếm", locked:true},
   {id:"mask", img:"assets/a42.webp", name:"Kính sao", rarity:"Hiếm", locked:true},
   {id:"gloves", img:"assets/a43.webp", name:"Găng tay", rarity:"Thường", locked:true},
-  {id:"hat", img:"assets/a40.webp", name:"Mũ tiệc", rarity:"Đặc biệt", locked:true}
+  {id:"hat", img:"assets/a40.webp", name:"Mũ tiệc", rarity:"Đặc biệt", locked:true},
+  {id:"sword", img:"assets/item_sword.png", name:"Kiếm Spidey", rarity:"Hiếm", locked:true}
 ];
 /* ================= STATE ================= */
 let S = JSON.parse(localStorage.getItem("spidey_proto2") || '{"done":[],"coins":0,"items":[],"equipped":[]}');
@@ -524,7 +525,8 @@ const DRESS_POS = {
   glove_l:{img:"assets/a46.png",l:19.6, t:12.7,w:17, z:3},
   glove_r:{img:"assets/a47.png",l:80.5, t:59.9,w:17, z:3},
   shoe_l:{img:"assets/a48.png", l:23.3, t:90, w:24, z:3},
-  shoe_r:{img:"assets/a49.png", l:79.2, t:91, w:24, z:3}
+  shoe_r:{img:"assets/a49.png", l:79.2, t:91, w:24, z:3},
+  sword: {img:"assets/item_sword.png", l:22, t:14, w:38, z:4, rot:-35}
 };
 function renderDressUp(){
   const st = document.getElementById("dressStage");
@@ -535,7 +537,9 @@ function renderDressUp(){
     const im = document.createElement("img");
     im.className = "dress-item" + (pop ? " pop-in" : "");
     im.src = p.img;
-    im.style.cssText = "left:"+p.l+"%;top:"+p.t+"%;width:"+p.w+"%;z-index:"+p.z;
+    let css = "left:"+p.l+"%;top:"+p.t+"%;width:"+p.w+"%;z-index:"+p.z+";";
+    if(p.rot) css += "transform:translate(-50%,-50%) rotate("+p.rot+"deg);";
+    im.style.cssText = css;
     st.appendChild(im);
   };
   // Track newly equipped for pop animation
@@ -547,6 +551,7 @@ function renderDressUp(){
   if(cur.includes("cape")) add("cape", isNew("cape"));
   if(cur.includes("gloves")){ add("glove_l", isNew("gloves")); add("glove_r", false); }
   if(cur.includes("shoes")){ add("shoe_l", isNew("shoes")); add("shoe_r", false); }
+  if(cur.includes("sword")) add("sword", isNew("sword"));
   renderDressUp._prev = [...cur];
 }
 /* ================= VIDEOS ================= */
