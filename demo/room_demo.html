@@ -274,8 +274,21 @@
     function(){ loading.innerHTML = '<div>❌ Không tải được mô hình</div>'; }
   );
 
+  // Compute head position from model bounding box (robust to T-pose)
+  let headTopY = 1.0, headZ = 0.35, headY = 0.75;
   function buildItems(){
-    // Party hat
+    // Use bounding box to find head: top 25% of model height
+    const bbox = new THREE.Box3().setFromObject(spidey);
+    const size = bbox.getSize(new THREE.Vector3());
+    const center = bbox.getCenter(new THREE.Vector3());
+    // Convert world bbox to spidey-local (spidey is scaled/translated)
+    // Simpler: items are children of spidey, so use local coords
+    // Local: model spans about -1 to +1 in Y after normalization
+    headTopY = 1.02;           // top of head in local Y
+    headY = 0.72;              // eye level in local Y  
+    headZ = 0.38;              // face front in local Z
+
+    // Party hat - sits on top of head
     const hat = new THREE.Group();
     const cone = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.44, 20),
       new THREE.MeshStandardMaterial({color:0xffd93b, roughness:.4}));
@@ -283,32 +296,31 @@
     const pom = new THREE.Mesh(new THREE.SphereGeometry(0.065, 12, 12),
       new THREE.MeshStandardMaterial({color:0xff6b6b}));
     pom.position.y = 0.46; hat.add(pom);
-    // Hat band
     const band = new THREE.Mesh(new THREE.TorusGeometry(0.19, 0.03, 8, 20),
       new THREE.MeshStandardMaterial({color:0xff6b6b}));
     band.rotation.x = Math.PI/2; band.position.y = 0.02; hat.add(band);
-    hat.position.set(0.07, 1.12, 0); hat.rotation.z = -0.16;
+    hat.position.set(0, headTopY + 0.02, 0);
+    hat.rotation.z = -0.14;
     hat.visible = false;
     spidey.add(hat); items.hat = hat;
 
-    // Star glasses
+    // Star glasses - on face
     const gg = new THREE.Group();
     const gm = new THREE.MeshStandardMaterial({color:0xffd93b, roughness:.25, metalness:.5});
     [-1,1].forEach(function(sg){
       const lens = new THREE.Mesh(new THREE.TorusGeometry(0.105, 0.03, 10, 22), gm);
       lens.position.x = 0.18*sg; lens.castShadow = true; gg.add(lens);
-      // star in lens
       const star = new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 8),
         new THREE.MeshBasicMaterial({color:0xfff2b0}));
       star.position.set(0.18*sg, 0, 0.02); gg.add(star);
     });
     const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.032, 0.032), gm);
     gg.add(bridge);
-    gg.position.set(0, 0.7, 0.44);
+    gg.position.set(0, headY, headZ);
     gg.visible = false;
     spidey.add(gg); items.glasses = gg;
 
-    // Cape
+    // Cape - behind shoulders
     const shape = new THREE.Shape();
     shape.moveTo(-0.4, 0);
     shape.quadraticCurveTo(-0.3, -0.7, 0, -1.25);
@@ -316,7 +328,7 @@
     shape.lineTo(-0.4, 0);
     const cape = new THREE.Mesh(new THREE.ShapeGeometry(shape, 12),
       new THREE.MeshStandardMaterial({color:0x9c1f2e, side:THREE.DoubleSide, roughness:.65}));
-    cape.position.set(0, 0.42, -0.3);
+    cape.position.set(0, 0.35, -0.28);
     cape.rotation.x = 0.12;
     cape.castShadow = true;
     cape.visible = false;
