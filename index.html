@@ -310,12 +310,84 @@ let S = JSON.parse(localStorage.getItem("spidey_proto2") || '{"done":[],"coins":
 function save(){ localStorage.setItem("spidey_proto2", JSON.stringify(S)); }
 /* ================= HELPERS ================= */
 let fallbackTimer=null;
-function stopSpeak(){ try{ speechSynthesis.cancel(); }catch(e){} if(fallbackTimer){ clearInterval(fallbackTimer); fallbackTimer=null; } if(window._stopWords){ try{window._stopWords();}catch(e){} window._stopWords=null; } document.querySelectorAll(".w.speaking").forEach(w=>w.classList.remove("speaking")); }
-let _enVoice=null;
-function pickEnVoice(){ try{ const vs=speechSynthesis.getVoices()||[]; _enVoice=vs.find(v=>v.lang==="en-US")||vs.find(v=>v.lang&&v.lang.toLowerCase().indexOf("en")===0)||null; }catch(e){ _enVoice=null; } }
-try{ if(typeof speechSynthesis!=="undefined"){ pickEnVoice(); speechSynthesis.onvoiceschanged=pickEnVoice; } }catch(e){}
-function withEnVoice(u){ try{ if(!_enVoice) pickEnVoice(); if(_enVoice) u.voice=_enVoice; }catch(e){} u.lang="en-US"; return u; }
-function speak(t, rate){ rate=rate||0.85; try{ stopSpeak(); const u=withEnVoice(new SpeechSynthesisUtterance(t)); u.rate=rate; speechSynthesis.speak(u); }catch(e){} }
+
+const VOICE={
+"a":"assets/v_a.mp3",
+"awesome!":"assets/v_awesome.mp3",
+"bed":"assets/v_bed.mp3",
+"brush":"assets/v_brush.mp3",
+"comb":"assets/v_comb.mp3",
+"excellent!":"assets/v_excellent.mp3",
+"face":"assets/v_face.mp3",
+"great job!":"assets/v_great_job.mp3",
+"hair":"assets/v_hair.mp3",
+"have":"assets/v_have.mp3",
+"i":"assets/v_i.mp3",
+"i brush my teeth":"assets/v_i_brush_my_teeth.mp3",
+"i have":"assets/v_i_have.mp3",
+"i have a comb":"assets/v_i_have_a_comb.mp3",
+"i have a red comb":"assets/v_i_have_a_red_comb.mp3",
+"i wake up":"assets/v_i_wake_up.mp3",
+"i wake up in the morning":"assets/v_i_wake_up_in_the_morning.mp3",
+"i wake up now":"assets/v_i_wake_up_now.mp3",
+"i wash":"assets/v_i_wash.mp3",
+"i wash my face":"assets/v_i_wash_my_face.mp3",
+"i wash my face with water":"assets/v_i_wash_my_face_with_water.mp3",
+"in":"assets/v_in.mp3",
+"is":"assets/v_is.mp3",
+"let's fight!":"assets/v_let_s_fight.mp3",
+"mirror":"assets/v_mirror.mp3",
+"morning":"assets/v_morning.mp3",
+"my":"assets/v_my.mp3",
+"now":"assets/v_now.mp3",
+"put the words in order!":"assets/v_put_the_words_in_order.mp3",
+"red":"assets/v_red.mp3",
+"sun":"assets/v_sun.mp3",
+"teeth":"assets/v_teeth.mp3",
+"the":"assets/v_the.mp3",
+"this":"assets/v_this.mp3",
+"this is":"assets/v_this_is.mp3",
+"this is a toothbrush":"assets/v_this_is_a_toothbrush.mp3",
+"toothbrush":"assets/v_toothbrush.mp3",
+"toothpaste":"assets/v_toothpaste.mp3",
+"touch the bed!":"assets/v_touch_the_bed.mp3",
+"touch the brush!":"assets/v_touch_the_brush.mp3",
+"touch the comb!":"assets/v_touch_the_comb.mp3",
+"touch the face!":"assets/v_touch_the_face.mp3",
+"touch the hair!":"assets/v_touch_the_hair.mp3",
+"touch the mirror!":"assets/v_touch_the_mirror.mp3",
+"touch the morning!":"assets/v_touch_the_morning.mp3",
+"touch the sun!":"assets/v_touch_the_sun.mp3",
+"touch the teeth!":"assets/v_touch_the_teeth.mp3",
+"touch the toothbrush!":"assets/v_touch_the_toothbrush.mp3",
+"touch the toothpaste!":"assets/v_touch_the_toothpaste.mp3",
+"touch the towel!":"assets/v_touch_the_towel.mp3",
+"touch the wake up!":"assets/v_touch_the_wake_up.mp3",
+"touch the wash!":"assets/v_touch_the_wash.mp3",
+"touch the water!":"assets/v_touch_the_water.mp3",
+"towel":"assets/v_towel.mp3",
+"try again!":"assets/v_try_again.mp3",
+"up":"assets/v_up.mp3",
+"wake":"assets/v_wake.mp3",
+"wake up":"assets/v_wake_up.mp3",
+"wash":"assets/v_wash.mp3",
+"water":"assets/v_water.mp3",
+"we win!":"assets/v_we_win.mp3",
+"with":"assets/v_with.mp3"
+};
+let _audioEl=null;
+function vkey(t){ return String(t||"").toLowerCase().replace(/[^a-z0-9\s!']/g,"").trim(); }
+function stopSpeak(){ try{ if(_audioEl){ _audioEl.pause(); _audioEl=null; } }catch(e){} try{ speechSynthesis.cancel(); }catch(e){} if(fallbackTimer){ clearInterval(fallbackTimer); fallbackTimer=null; } if(window._stopWords){ try{window._stopWords();}catch(e){} window._stopWords=null; } document.querySelectorAll(".w.speaking").forEach(w=>w.classList.remove("speaking")); }
+function playVoice(text, onDone){
+  const src=VOICE[vkey(text)];
+  if(!src){ if(onDone) onDone(); return; }
+  try{ if(_audioEl){ _audioEl.pause(); } }catch(e){}
+  _audioEl=new Audio(src);
+  _audioEl.onended=function(){ _audioEl=null; if(onDone) onDone(); };
+  _audioEl.onerror=function(){ _audioEl=null; if(onDone) onDone(); };
+  _audioEl.play().catch(function(){ _audioEl=null; if(onDone) onDone(); });
+}
+function speak(t, rate){ try{ stopSpeak(); playVoice(t); }catch(e){} }
 function toast(msg){ const el=document.getElementById("toast"); el.textContent=msg; el.style.display="block"; setTimeout(()=>el.style.display="none",2000); }
 function confetti(){ const box=document.querySelector(".phone"); const em=["🎉","⭐","🕸️","✨"];
   for(let i=0;i<16;i++){ const s=document.createElement("div"); s.className="confetti"; s.textContent=em[i%4];
@@ -472,11 +544,7 @@ function speakWords(lineEl, words, onDone){
     if(i>=words.length){ setTimeout(()=>{ clear(); onDone&&onDone(); }, 300); return; }
     spans.forEach(s=>s.classList.remove("speaking"));
     if(spans[i]) spans[i].classList.add("speaking");
-    const u=withEnVoice(new SpeechSynthesisUtterance(words[i]));
-    u.rate=0.95;
-    u.onend=()=>{ i++; setTimeout(next, 70); };
-    u.onerror=()=>{ i++; setTimeout(next, 70); };
-    try{ speechSynthesis.speak(u); }catch(e){ i++; setTimeout(next,70); }
+    playVoice(words[i], ()=>{ i++; setTimeout(next, 70); });
   };
   next();
 }
@@ -488,11 +556,8 @@ function readPyramid(){
     stopSpeak();
     const el=lines[lines.length-1];
     el.querySelectorAll(".w").forEach(w=>w.classList.add("speaking"));
-    const u=withEnVoice(new SpeechSynthesisUtterance(cur.pyramid[cur.pyramid.length-1]));
-    u.rate=0.9;
     const done=()=>{ el.querySelectorAll(".w").forEach(w=>w.classList.remove("speaking")); btn.disabled=false; };
-    u.onend=done; u.onerror=done;
-    try{ speechSynthesis.speak(u); }catch(e){ done(); }
+    playVoice(cur.pyramid[cur.pyramid.length-1], done);
   };
   const next=()=>{
     if(i>=lines.length){ setTimeout(fluentLast, 350); return; }
