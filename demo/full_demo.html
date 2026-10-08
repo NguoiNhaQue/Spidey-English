@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Demo Tủ đồ - Full trang bị</title>
+<title>Demo Tủ đồ - Full trang bị (v2)</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   body{font-family:-apple-system,'Segoe UI',Roboto,sans-serif;background:#87ceeb;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:16px}
@@ -11,48 +11,55 @@
   .stage{position:relative;width:min(92vw,380px);aspect-ratio:3/4;border-radius:24px;overflow:hidden;
     background:url('https://spidey-english-88.vercel.app/assets/bedroom_bg.jpg') center/cover;
     box-shadow:0 12px 32px rgba(0,0,0,.25);border:4px solid #fff}
-  .spidey{position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:center}
-  .spidey img{height:96%;object-fit:contain;filter:drop-shadow(0 8px 16px rgba(0,0,0,.3))}
-  .item{position:absolute;transform:translate(-50%,-50%);pointer-events:none}
-  .controls{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center;max-width:420px}
-  .btn{padding:10px 16px;border-radius:999px;border:2px solid #bcd6f5;background:#fff;font-weight:700;
-    cursor:pointer;font-size:14px}
+  .spidey{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+  .spidey img{height:92%;object-fit:contain;filter:drop-shadow(0 8px 16px rgba(0,0,0,.3))}
+  .item{position:absolute;transform:translate(-50%,-50%);pointer-events:none;filter:drop-shadow(0 4px 8px rgba(0,0,0,.25))}
+  .controls{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center;max-width:440px}
+  .btn{padding:10px 14px;border-radius:999px;border:2px solid #bcd6f5;background:#fff;font-weight:700;
+    cursor:pointer;font-size:13px}
   .btn.on{background:#ffd93b;border-color:#e09b00}
   .note{margin-top:12px;color:#3a4a6a;font-size:13px;text-align:center;max-width:400px;line-height:1.5}
 </style>
 </head>
 <body>
-<h2>🕷️ Demo Tủ đồ — Full trang bị</h2>
+<h2>🕷️ Demo Tủ đồ — Full trang bị v2</h2>
 <div class="stage" id="stage">
   <div class="spidey"><img src="https://spidey-english-88.vercel.app/assets/a06_final.png" alt="Spidey"></div>
 </div>
 <div class="controls" id="controls"></div>
-<p class="note">Bấm các nút để bật/tắt từng vật phẩm. Chụp màn hình gửi mình nếu vị trí nào bị lệch.</p>
+<p class="note">Ảnh vật phẩm đã tách nền trong suốt. Bấm nút để bật/tắt. Chụp màn hình gửi mình nếu vị trí nào lệch.</p>
 <script>
-const ITEMS = [
-  {id:'shoes', name:'👟 Giày', img:'https://spidey-english-88.vercel.app/assets/a40.webp', l:26, t:88, w:22, z:3},
-  {id:'shoes2', name:'🚀 Giày phản lực', img:'https://spidey-english-88.vercel.app/assets/item_shoes2.png', l:26, t:88, w:22, z:3},
-  {id:'gloves', name:'🧤 Găng tay', img:'https://spidey-english-88.vercel.app/assets/a43.webp', l:50, t:55, w:30, z:3},
-  {id:'mask', name:'🕶️ Kính', img:'https://spidey-english-88.vercel.app/assets/a42.webp', l:50, t:28, w:36, z:4},
-  {id:'cape', name:'🦸 Áo choàng', img:'https://spidey-english-88.vercel.app/assets/a41.webp', l:50, t:60, w:90, z:1},
-  {id:'cape2', name:'✨ Choàng phát sáng', img:'https://spidey-english-88.vercel.app/assets/item_cape2.png', l:50, t:60, w:90, z:1},
-  {id:'sword', name:'🗡️ Kiếm', img:'https://spidey-english-88.vercel.app/assets/item_sword.png', l:24, t:16, w:34, z:4, rot:-30},
-  {id:'sword2', name:'⚔️ Kiếm ánh sáng', img:'https://spidey-english-88.vercel.app/assets/item_sword2.png', l:24, t:16, w:34, z:4, rot:-30},
-  {id:'hat', name:'🎩 Mũ', img:'https://spidey-english-88.vercel.app/assets/a40.webp', l:50, t:8, w:40, z:5},
+const B='https://spidey-english-88.vercel.app/assets/';
+const ITEMS=[
+  // Shoes on feet (Spidey feet at bottom, spread apart)
+  {id:'shoes', name:'👟 Giày', img:B+'item_shoes_t.png', l:32, t:82, w:20, z:3},
+  // Sword in raised fist (top-left)
+  {id:'sword', name:'🗡️ Kiếm', img:B+'item_sword_t.png', l:22, t:14, w:30, z:4, rot:-25},
+  {id:'sword2', name:'⚔️ Kiếm AS', img:B+'item_sword2_t.png', l:22, t:14, w:30, z:4, rot:-25},
+  // Mask on face
+  {id:'mask', name:'🕶️ Kính', img:B+'item_mask_t.png', l:50, t:26, w:32, z:4},
+  // Cape behind (large, centered)
+  {id:'cape', name:'🦸 Choàng', img:B+'item_cape_t.png', l:50, t:55, w:85, z:1},
+  {id:'cape2', name:'✨ Choàng PS', img:B+'item_cape2_t.png', l:50, t:55, w:85, z:1},
+  // Gloves on hands
+  {id:'gloves', name:'🧤 Găng', img:B+'item_gloves_t.png', l:72, t:52, w:18, z:3},
+  // Rocket shoes (tier 2)
+  {id:'shoes2', name:'🚀 Giày PL', img:B+'item_shoes2_t.png', l:32, t:82, w:20, z:3},
+  // Hat on head
+  {id:'hat', name:'🎩 Mũ', img:B+'item_shoes_t.png', l:50, t:10, w:30, z:5},
 ];
-const stage = document.getElementById('stage');
-const controls = document.getElementById('controls');
-const active = {};
-// Start with ALL equipped (full trang bị)
-ITEMS.forEach(it => active[it.id] = true);
+const stage=document.getElementById('stage');
+const controls=document.getElementById('controls');
+const active={};
+ITEMS.forEach(it=>active[it.id]=true);
 function render(){
   stage.querySelectorAll('.item').forEach(e=>e.remove());
   ITEMS.forEach(it=>{
-    if(!active[it.id]) return;
-    const im = document.createElement('img');
+    if(!active[it.id])return;
+    const im=document.createElement('img');
     im.className='item'; im.src=it.img;
     let css=`left:${it.l}%;top:${it.t}%;width:${it.w}%;z-index:${it.z};`;
-    if(it.rot) css+=`transform:translate(-50%,-50%) rotate(${it.rot}deg);`;
+    if(it.rot)css+=`transform:translate(-50%,-50%) rotate(${it.rot}deg);`;
     im.style.cssText=css;
     stage.appendChild(im);
   });
