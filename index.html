@@ -180,10 +180,10 @@
   <main id="main">
     <section class="screen active" id="s-home">
       <div class="diorama home-movie">
-        <video autoplay muted loop playsinline preload="auto" style="width:100%;display:block;aspect-ratio:16/10;object-fit:cover;background:#000"><source src="assets/a01.mp4" type="video/mp4"></video>
+        <video id="homeVid" playsinline preload="auto" style="width:100%;display:block;aspect-ratio:16/10;object-fit:cover;background:#000"><source src="assets/home_greet.mp4" type="video/mp4"></video>
         <div class="leo-badge">🕷️ LEO</div>
       </div>
-      <div class="say-en"><span class="en-line">"Hello! My name is Leo. Let's study English together!"</span><button class="mini-spk" onclick="playHomeLine()">🔊</button><audio id="homeLineAudio" preload="auto"><source src="assets/a02.mp3" type="audio/mpeg"></audio></div>
+      <div class="say-en"><span class="en-line">"Hello! My name is Leo. Let's study English together!"</span><button class="mini-spk" onclick="playHomeGreet()">🔊</button></div>
       <div class="equipped-chips" id="homeChips"></div>
       <div class="speech" id="spideySay"></div>
       <button class="btn red" onclick="show('s-map')">🗺️ Vào bản đồ thử thách</button>
@@ -345,8 +345,10 @@ function renderHome(){
     ? "<b>Spidey:</b> Chào bạn! Mình là <b>Spidey</b>! Quái vật Grime đang quậy phá khắp nhà. Cùng học tiếng Anh để đánh bại chúng nhé! 🕷️"
     : `<b>Spidey:</b> Tuyệt vời! Bạn đã thắng ${n}/5 thử thách vùng Phòng Tắm. ${n>=5?"Cả vùng sạch bóng rồi! 🎉":"Tiếp tục nào! 💪"}`;
 }
-function playHomeLine(){ const a=document.getElementById("homeLineAudio"); if(a){ a.currentTime=0; a.play().catch(()=>{}); } }
-function tryAutoHomeLine(){ const a=document.getElementById("homeLineAudio"); if(!a||a.dataset.done) return; a.play().then(()=>{ a.dataset.done="1"; }).catch(()=>{}); }
+function homeVidEl(){ return document.getElementById("homeVid"); }
+function playHomeGreet(){ var v=homeVidEl(); if(!v) return; v.loop=false; v.muted=false; if(!v.src.includes("home_greet.mp4")) v.src="assets/home_greet.mp4"; v.currentTime=0; v.play().catch(function(){ v.muted=true; v.play().catch(function(){}); }); }
+function startHomeSilentLoop(){ var v=homeVidEl(); if(!v||v.loop&&v.src.includes("a01.mp4")) return; v.loop=true; v.muted=true; v.src="assets/a01.mp4"; v.currentTime=0; v.play().catch(function(){}); }
+function initHomeVideo(){ var v=homeVidEl(); if(!v||v.dataset.init) return; v.dataset.init="1"; v.addEventListener("ended",function(){ if(!v.loop) startHomeSilentLoop(); }); v.muted=false; v.play().then(function(){}).catch(function(){ v.muted=true; v.play().catch(function(){}); var unmuteOnce=function(){ v.muted=false; v.currentTime=0; if(!v.src.includes("home_greet.mp4")) v.src="assets/home_greet.mp4"; v.play().catch(function(){}); }; ["pointerdown","keydown","touchend"].forEach(function(ev){ document.addEventListener(ev,unmuteOnce,{once:true}); }); }); }
 function renderMap(){
   document.querySelectorAll("#mapwrap .mnode").forEach(nd=>{
     const i=parseInt(nd.dataset.n), L=LESSONS[i-1];
@@ -596,8 +598,7 @@ function equipLoot(){ const id=cur.loot.itemId; if(!S.equipped.includes(id)) S.e
 /* ================= INIT ================= */
 renderHome(); renderMap();
 if('serviceWorker' in navigator){ window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); }); }
-tryAutoHomeLine();
-["pointerdown","keydown","touchend"].forEach(ev=>document.addEventListener(ev,tryAutoHomeLine,{once:true}));
+initHomeVideo();
 </script>
 </div>
 </body>
