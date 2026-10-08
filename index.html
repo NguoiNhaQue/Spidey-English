@@ -453,11 +453,20 @@ function renderCloset(){
   });
 }
 /* ============ 3D CLOSET ============ */
-let _c3d = null;
+let _c3d = null, _c3dTries = 0;
 function initCloset3D(){
   const el = document.getElementById("closet3d");
-  if(!el || typeof THREE === "undefined" || typeof THREE.GLTFLoader === "undefined") return;
+  if(!el) return;
   if(_c3d && _c3d.el === el) { sync3DItems(); return; }
+  // Wait for Three.js CDN to load (race condition fix)
+  if(typeof THREE === "undefined" || typeof THREE.GLTFLoader === "undefined"){
+    _c3dTries++;
+    if(_c3dTries === 1) el.innerHTML = '<div style="color:#fff;padding:140px 20px;text-align:center">⏳ Đang tải Spidey 3D...</div>';
+    if(_c3dTries < 100){ setTimeout(initCloset3D, 200); return; }
+    el.innerHTML = '<div style="color:#fff;padding:140px 20px;text-align:center">❌ Không tải được thư viện 3D.<br>Vui lòng kiểm tra mạng và thử lại.</div>';
+    return;
+  }
+  _c3dTries = 0;
   // cleanup old
   if(_c3d && _c3d.renderer){ try{ _c3d.renderer.dispose(); }catch(e){} el.innerHTML=""; }
   const scene = new THREE.Scene();
@@ -481,7 +490,10 @@ function initCloset3D(){
     state.rotX = Math.max(-0.6, Math.min(0.6, state.rotX)); px=e.clientX; py=e.clientY; });
   addEventListener("pointerup", ()=>{ dragging=false; });
   // load model
+  el.innerHTML = '<div style="color:#fff;padding:140px 20px;text-align:center">⏳ Đang tải mô hình Spidey...</div>';
+  // Note: canvas will be appended after, replacing the loading text
   new THREE.GLTFLoader().load("assets/spidey_chibi.glb", gltf=>{
+    el.innerHTML = ""; // clear loading text
     const m = gltf.scene;
     const box = new THREE.Box3().setFromObject(m);
     const center = box.getCenter(new THREE.Vector3());
@@ -491,7 +503,10 @@ function initCloset3D(){
     m.position.sub(center.multiplyScalar(sc)); m.position.y += 1.1;
     scene.add(m); state.spidey = m; state.boxSize = size.clone().multiplyScalar(sc);
     build3DItems(state); sync3DItems();
-  }, undefined, err=>{ console.warn("3D load fail", err); });
+  }, undefined, err=>{
+    console.warn("3D load fail", err);
+    el.innerHTML = '<div style="color:#fff;padding:140px 20px;text-align:center">❌ Không tải được mô hình Spidey.</div>';
+  });
   const clock = new THREE.Clock();
   (function animate(){
     requestAnimationFrame(animate);
