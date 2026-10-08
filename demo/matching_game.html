@@ -15,20 +15,34 @@
     align-items: center;
     padding: 20px;
     color: white;
+    overflow-x: hidden;
   }
   h1 { margin-bottom: 5px; font-size: 22px; }
-  .subtitle { opacity: 0.7; margin-bottom: 15px; font-size: 14px; }
+  .subtitle { opacity: 0.7; margin-bottom: 15px; font-size: 14px; text-align: center; }
   .score { font-size: 18px; margin-bottom: 15px; color: #FFD700; }
   .board {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    max-width: 500px;
+    display: flex;
+    gap: 20px;
+    max-width: 600px;
     width: 100%;
     margin-bottom: 20px;
+    justify-content: center;
+  }
+  .column {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+    max-width: 220px;
+  }
+  .column-title {
+    text-align: center;
+    font-size: 16px;
+    opacity: 0.8;
+    margin-bottom: 4px;
   }
   .card {
-    aspect-ratio: 1;
+    aspect-ratio: 1.4;
     border-radius: 15px;
     display: flex;
     align-items: center;
@@ -36,7 +50,7 @@
     cursor: pointer;
     font-size: 20px;
     font-weight: bold;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: transform 0.2s, box-shadow 0.2s, opacity 0.3s;
     border: 3px solid transparent;
     overflow: hidden;
     position: relative;
@@ -92,18 +106,33 @@
     cursor: pointer;
   }
   .btn:hover { background: #45a049; }
+  .star {
+    position: fixed;
+    font-size: 28px;
+    pointer-events: none;
+    z-index: 1000;
+    transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
 </style>
 </head>
 <body>
   <h1>🧩 Nối Từ với Hình</h1>
-  <div class="subtitle">Bấm 1 thẻ hình, rồi bấm 1 thẻ chữ đúng với nó</div>
+  <div class="subtitle">Bấm 1 thẻ hình bên trái, rồi bấm 1 thẻ chữ bên phải</div>
   <div class="score">⭐ <span id="score">0</span> / <span id="total">0</span></div>
   <div id="message"></div>
-  <div class="board" id="board"></div>
+  <div class="board">
+    <div class="column">
+      <div class="column-title">🖼️ Hình</div>
+      <div id="picCol" style="display:flex;flex-direction:column;gap:12px;"></div>
+    </div>
+    <div class="column">
+      <div class="column-title">📝 Chữ</div>
+      <div id="wordCol" style="display:flex;flex-direction:column;gap:12px;"></div>
+    </div>
+  </div>
   <button class="btn" onclick="restart()">🔄 Chơi lại</button>
 
 <script>
-  // Sample vocab from Lesson 1 (same structure as app: [word, vietnamese, image])
   const BASE = 'https://spidey-english-88.vercel.app/';
   const vocab = [
     ["morning", "buổi sáng", BASE + "assets/a14.jpg"],
@@ -128,7 +157,6 @@
   }
 
   function speak(text) {
-    // Use pre-recorded MP3 if available, fallback to speechSynthesis
     const audio = new Audio(BASE + 'assets/v_' + text.replace(/ /g, '_') + '.mp3');
     audio.onerror = () => {
       const u = new SpeechSynthesisUtterance(text);
@@ -143,8 +171,10 @@
   }
 
   function build() {
-    const board = document.getElementById('board');
-    board.innerHTML = '';
+    const picCol = document.getElementById('picCol');
+    const wordCol = document.getElementById('wordCol');
+    picCol.innerHTML = '';
+    wordCol.innerHTML = '';
     matched = 0;
     selectedPic = null;
     selectedWord = null;
@@ -153,57 +183,59 @@
     document.getElementById('total').textContent = vocab.length;
     document.getElementById('message').textContent = '';
 
-    // Create pic cards and word cards, shuffle together
-    let cards = [];
-    vocab.forEach((v, i) => {
-      cards.push({ type: 'pic', word: v[0], img: v[2], id: 'p' + i });
-      cards.push({ type: 'word', word: v[0], id: 'w' + i });
-    });
-    shuffle(cards);
+    // Shuffle pics and words SEPARATELY (not mixed)
+    const pics = shuffle([...vocab]);
+    const words = shuffle([...vocab]);
 
-    cards.forEach(c => {
+    pics.forEach((v) => {
       const div = document.createElement('div');
-      div.className = 'card ' + c.type;
-      div.dataset.word = c.word;
-      div.dataset.type = c.type;
-      div.dataset.id = c.id;
-      if (c.type === 'pic') {
-        div.style.backgroundImage = `url('${c.img}')`;
-      } else {
-        div.textContent = c.word;
-      }
-      div.onclick = () => onCardClick(div);
-      board.appendChild(div);
+      div.className = 'card pic';
+      div.dataset.word = v[0];
+      div.style.backgroundImage = `url('${v[2]}')`;
+      div.onclick = () => onCardClick(div, 'pic');
+      picCol.appendChild(div);
     });
+
+    words.forEach((v) => {
+      const div = document.createElement('div');
+      div.className = 'card word';
+      div.dataset.word = v[0];
+      div.textContent = v[0];
+      div.onclick = () => onCardClick(div, 'word');
+      wordCol.appendChild(div);
+    });
+
+    console.log(`Built: ${pics.length} pics, ${words.length} words`);
   }
 
-  function onCardClick(div) {
+  function onCardClick(div, type) {
     if (lock || div.classList.contains('matched')) return;
 
-    if (div.dataset.type === 'pic') {
+    if (type === 'pic') {
       if (selectedPic) selectedPic.classList.remove('selected');
       selectedPic = div;
       div.classList.add('selected');
-      // Auto-speak the word? No, that gives away the answer. Just select.
     } else {
       if (selectedWord) selectedWord.classList.remove('selected');
       selectedWord = div;
       div.classList.add('selected');
     }
 
-    // Check if we have a pair
     if (selectedPic && selectedWord) {
       lock = true;
       if (selectedPic.dataset.word === selectedWord.dataset.word) {
-        // Correct!
         const word = selectedPic.dataset.word;
-        selectedPic.classList.add('correct-flash');
-        selectedWord.classList.add('correct-flash');
+        const picEl = selectedPic;
+        const wordEl = selectedWord;
+        picEl.classList.add('correct-flash');
+        wordEl.classList.add('correct-flash');
+        // Star effect: from word card to pic card
+        flyStar(wordEl, picEl);
         setTimeout(() => {
-          selectedPic.classList.add('matched');
-          selectedWord.classList.add('matched');
-          selectedPic.classList.remove('selected', 'correct-flash');
-          selectedWord.classList.remove('selected', 'correct-flash');
+          picEl.classList.add('matched');
+          wordEl.classList.add('matched');
+          picEl.classList.remove('selected', 'correct-flash');
+          wordEl.classList.remove('selected', 'correct-flash');
           selectedPic = null;
           selectedWord = null;
           lock = false;
@@ -212,11 +244,9 @@
           speak(word);
           if (matched === vocab.length) {
             document.getElementById('message').textContent = '🎉 Tuyệt vời! Xong hết rồi!';
-            speak('Great job!');
           }
-        }, 400);
+        }, 900);
       } else {
-        // Wrong!
         selectedPic.classList.add('wrong');
         selectedWord.classList.add('wrong');
         setTimeout(() => {
@@ -227,6 +257,30 @@
           lock = false;
         }, 500);
       }
+    }
+  }
+
+  function flyStar(fromEl, toEl) {
+    const from = fromEl.getBoundingClientRect();
+    const to = toEl.getBoundingClientRect();
+    // Create 5 stars
+    for (let i = 0; i < 5; i++) {
+      setTimeout(() => {
+        const star = document.createElement('div');
+        star.className = 'star';
+        star.textContent = '⭐';
+        star.style.left = (from.left + from.width/2 - 14 + (Math.random()*40-20)) + 'px';
+        star.style.top = (from.top + from.height/2 - 14) + 'px';
+        document.body.appendChild(star);
+        // Animate to target
+        requestAnimationFrame(() => {
+          star.style.left = (to.left + to.width/2 - 14 + (Math.random()*30-15)) + 'px';
+          star.style.top = (to.top + to.height/2 - 14) + 'px';
+          star.style.transform = 'scale(0.3) rotate(360deg)';
+          star.style.opacity = '0.3';
+        });
+        setTimeout(() => star.remove(), 900);
+      }, i * 120);
     }
   }
 
