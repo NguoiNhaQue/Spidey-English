@@ -311,7 +311,11 @@ function save(){ localStorage.setItem("spidey_proto2", JSON.stringify(S)); }
 /* ================= HELPERS ================= */
 let fallbackTimer=null;
 function stopSpeak(){ try{ speechSynthesis.cancel(); }catch(e){} if(fallbackTimer){ clearInterval(fallbackTimer); fallbackTimer=null; } if(window._stopWords){ try{window._stopWords();}catch(e){} window._stopWords=null; } document.querySelectorAll(".w.speaking").forEach(w=>w.classList.remove("speaking")); }
-function speak(t, rate){ rate=rate||0.85; try{ stopSpeak(); const u=new SpeechSynthesisUtterance(t); u.lang="en-US"; u.rate=rate; speechSynthesis.speak(u); }catch(e){} }
+let _enVoice=null;
+function pickEnVoice(){ try{ const vs=speechSynthesis.getVoices()||[]; _enVoice=vs.find(v=>v.lang==="en-US")||vs.find(v=>v.lang&&v.lang.toLowerCase().indexOf("en")===0)||null; }catch(e){ _enVoice=null; } }
+try{ if(typeof speechSynthesis!=="undefined"){ pickEnVoice(); speechSynthesis.onvoiceschanged=pickEnVoice; } }catch(e){}
+function withEnVoice(u){ try{ if(!_enVoice) pickEnVoice(); if(_enVoice) u.voice=_enVoice; }catch(e){} u.lang="en-US"; return u; }
+function speak(t, rate){ rate=rate||0.85; try{ stopSpeak(); const u=withEnVoice(new SpeechSynthesisUtterance(t)); u.rate=rate; speechSynthesis.speak(u); }catch(e){} }
 function toast(msg){ const el=document.getElementById("toast"); el.textContent=msg; el.style.display="block"; setTimeout(()=>el.style.display="none",2000); }
 function confetti(){ const box=document.querySelector(".phone"); const em=["🎉","⭐","🕸️","✨"];
   for(let i=0;i<16;i++){ const s=document.createElement("div"); s.className="confetti"; s.textContent=em[i%4];
@@ -468,8 +472,8 @@ function speakWords(lineEl, words, onDone){
     if(i>=words.length){ setTimeout(()=>{ clear(); onDone&&onDone(); }, 300); return; }
     spans.forEach(s=>s.classList.remove("speaking"));
     if(spans[i]) spans[i].classList.add("speaking");
-    const u=new SpeechSynthesisUtterance(words[i]);
-    u.lang="en-US"; u.rate=0.95;
+    const u=withEnVoice(new SpeechSynthesisUtterance(words[i]));
+    u.rate=0.95;
     u.onend=()=>{ i++; setTimeout(next, 70); };
     u.onerror=()=>{ i++; setTimeout(next, 70); };
     try{ speechSynthesis.speak(u); }catch(e){ i++; setTimeout(next,70); }
@@ -484,8 +488,8 @@ function readPyramid(){
     stopSpeak();
     const el=lines[lines.length-1];
     el.querySelectorAll(".w").forEach(w=>w.classList.add("speaking"));
-    const u=new SpeechSynthesisUtterance(cur.pyramid[cur.pyramid.length-1]);
-    u.lang="en-US"; u.rate=0.9;
+    const u=withEnVoice(new SpeechSynthesisUtterance(cur.pyramid[cur.pyramid.length-1]));
+    u.rate=0.9;
     const done=()=>{ el.querySelectorAll(".w").forEach(w=>w.classList.remove("speaking")); btn.disabled=false; };
     u.onend=done; u.onerror=done;
     try{ speechSynthesis.speak(u); }catch(e){ done(); }
