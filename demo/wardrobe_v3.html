@@ -35,7 +35,9 @@
   #shoeL, #shoeR { z-index: 20; width: 24%; bottom: 1%; }
   #shoeL { left: 23%; }
   #shoeR { left: 53%; }
-  #gloves { z-index: 20; width: 75%; left: 12.5%; top: 58%; }
+  #gloveL, #gloveR { z-index: 20; width: 16%; top: 60%; }
+  #gloveL { left: 10%; }
+  #gloveR { left: 74%; }
   #glasses { z-index: 30; width: 42%; left: 29%; top: 27.5%; }
   #sword { z-index: 25; height: 42%; left: 8%; top: 28%; }
   #hat { z-index: 30; width: 28%; left: 42%; top: 0%; transform: rotate(12deg); }
@@ -73,7 +75,8 @@
     <img id="base" class="layer" src="assets3d/hero_base.png" alt="hero">
     <img id="shoeL" class="layer hidden" src="assets3d/item_shoes.png" alt="shoeL">
     <img id="shoeR" class="layer hidden" src="assets3d/item_shoes.png" alt="shoeR">
-    <img id="gloves" class="layer hidden" src="assets3d/item_gloves.png" alt="gloves">
+    <img id="gloveL" class="layer hidden" src="assets3d/item_glove_l.png" alt="gloveL">
+    <img id="gloveR" class="layer hidden" src="assets3d/item_glove_r.png" alt="gloveR">
     <img id="glasses" class="layer hidden" src="assets3d/item_glasses.png" alt="glasses">
     <img id="sword" class="layer hidden" src="assets3d/item_sword.png" alt="sword">
     <img id="hat" class="layer hidden" src="assets3d/item_hat.png" alt="hat">
@@ -81,7 +84,7 @@
   
   <div class="controls">
     <button class="btn" data-item="shoeL,shoeR"><span class="icon">👟</span>Giày</button>
-    <button class="btn" data-item="gloves"><span class="icon">🧤</span>Găng</button>
+    <button class="btn" data-item="gloveL,gloveR"><span class="icon">🧤</span>Găng</button>
     <button class="btn" data-item="glasses"><span class="icon">🕶️</span>Kính</button>
     <button class="btn" data-item="cape"><span class="icon">🦸</span>Choàng</button>
     <button class="btn" data-item="sword"><span class="icon">🗡️</span>Kiếm</button>
