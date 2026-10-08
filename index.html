@@ -166,6 +166,8 @@
 .say-en .en-line{flex:1;font-weight:700;color:#1d5fd1;font-size:.92rem;}
 .mini-spk{border:none;background:#e63946;color:#fff;border-radius:50%;width:38px;height:38px;font-size:1.1rem;cursor:pointer;flex-shrink:0;}
 </style>
+<script src="https://unpkg.com/three@0.147.0/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.147.0/examples/js/loaders/GLTFLoader.js"></script>
 </head>
 <body>
 <div class="phone">
@@ -230,8 +232,9 @@
     </section>
     <section class="screen" id="s-closet">
       <div class="card" style="text-align:center">
-        <h4>🕷️ Spidey của bạn</h4>
-        <div class="dress-stage" id="dressStage"><img class="dress-base" src="assets/a06.png" alt="Spidey"></div>
+        <h4>🕷️ Spidey 3D của bạn</h4>
+        <p style="font-size:.8rem;color:#5b7a99">Kéo để xoay • Chụm để zoom</p>
+        <div id="closet3d" style="width:100%;height:380px;border-radius:16px;overflow:hidden;background:radial-gradient(circle at 50% 30%,#3a5ac8,#1a2a6c);touch-action:none;margin:8px 0"></div>
         <div class="equipped-chips" id="closetChips" style="margin:8px 0"></div>
         <h4>🎒 Chạm để mặc / tháo đồ cho Spidey</h4>
         <div class="closet-grid" id="closetGrid"></div>
@@ -297,8 +300,9 @@ const LESSONS = [
 const ITEMS = [
   {id:"shoes", img:"assets/a40.webp", name:"Giày Spidey", rarity:"Hiếm"},
   {id:"cape", img:"assets/a41.webp", name:"Áo choàng", rarity:"Hiếm", locked:true},
-  {id:"mask", img:"assets/a42.webp", name:"Mặt nạ", rarity:"Hiếm", locked:true},
-  {id:"gloves", img:"assets/a43.webp", name:"Găng tay", rarity:"Thường", locked:true}
+  {id:"mask", img:"assets/a42.webp", name:"Kính sao", rarity:"Hiếm", locked:true},
+  {id:"gloves", img:"assets/a43.webp", name:"Găng tay", rarity:"Thường", locked:true},
+  {id:"hat", img:"assets/a40.webp", name:"Mũ tiệc", rarity:"Đặc biệt", locked:true}
 ];
 /* ================= STATE ================= */
 let S = JSON.parse(localStorage.getItem("spidey_proto2") || '{"done":[],"coins":0,"items":[],"equipped":[]}');
@@ -444,29 +448,100 @@ function renderCloset(){
     d.innerHTML='<img src="'+it.img+'" alt="'+it.name+'"><div class="nm">'+(owned?it.name:"???")+'</div><div class="rw">'+(owned?it.rarity:"Chưa mở khóa")+'</div>';
     d.onclick=()=>{ if(!owned){ toast("Chơi tiếp để mở khóa món này!"); return; }
       const ix=S.equipped.indexOf(it.id); if(ix>=0)S.equipped.splice(ix,1); else S.equipped.push(it.id);
-      save(); renderCloset(); };
+      save(); sync3DItems(); renderCloset(); };
     g.appendChild(d);
   });
 }
-const DRESS_POS={
-  mask:{img:"assets/a44.png",l:55.5,t:26,w:39,z:3},
-  cape:{img:"assets/a45.png",l:51,t:62,w:95,z:0},
-  glove_l:{img:"assets/a46.png",l:19.6,t:12.7,w:17,z:3},
-  glove_r:{img:"assets/a47.png",l:80.5,t:59.9,w:17,z:3},
-  shoe_l:{img:"assets/a48.png",l:23.3,t:90,w:24,z:3},
-  shoe_r:{img:"assets/a49.png",l:79.2,t:91,w:24,z:3}
-};
-function renderDressUp(){
-  const st=document.getElementById("dressStage"); if(!st) return;
-  st.querySelectorAll(".dress-item").forEach(e=>e.remove());
-  const add=(k)=>{ const p=DRESS_POS[k]; const im=document.createElement("img");
-    im.className="dress-item"; im.src=p.img;
-    im.style.cssText="left:"+p.l+"%;top:"+p.t+"%;width:"+p.w+"%;z-index:"+p.z; st.appendChild(im); };
-  if(S.equipped.includes("mask")) add("mask");
-  if(S.equipped.includes("cape")) add("cape");
-  if(S.equipped.includes("gloves")){ add("glove_l"); add("glove_r"); }
-  if(S.equipped.includes("shoes")){ add("shoe_l"); add("shoe_r"); }
+/* ============ 3D CLOSET ============ */
+let _c3d = null;
+function initCloset3D(){
+  const el = document.getElementById("closet3d");
+  if(!el || typeof THREE === "undefined" || typeof THREE.GLTFLoader === "undefined") return;
+  if(_c3d && _c3d.el === el) { sync3DItems(); return; }
+  // cleanup old
+  if(_c3d && _c3d.renderer){ try{ _c3d.renderer.dispose(); }catch(e){} el.innerHTML=""; }
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(40, el.clientWidth/el.clientHeight, 0.1, 100);
+  camera.position.set(0, 1.2, 4.5); camera.lookAt(0, 0.8, 0);
+  const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+  renderer.setSize(el.clientWidth||300, el.clientHeight||380);
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  el.appendChild(renderer.domElement);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.9));
+  const key = new THREE.DirectionalLight(0xffffff, 1.2); key.position.set(3,6,4); scene.add(key);
+  const rim = new THREE.DirectionalLight(0xaaccff, 0.5); rim.position.set(-4,3,-3); scene.add(rim);
+  const state = {el, scene, camera, renderer, spidey:null, items:{}, rotY:0, rotX:0};
+  _c3d = state;
+  // drag rotate
+  let dragging=false, px=0, py=0;
+  const cv = renderer.domElement; cv.style.touchAction="none";
+  cv.addEventListener("pointerdown", e=>{ dragging=true; px=e.clientX; py=e.clientY; try{cv.setPointerCapture(e.pointerId);}catch(_){} });
+  addEventListener("pointermove", e=>{ if(!dragging||!state.spidey) return;
+    state.rotY += (e.clientX-px)*0.012; state.rotX += (e.clientY-py)*0.006;
+    state.rotX = Math.max(-0.6, Math.min(0.6, state.rotX)); px=e.clientX; py=e.clientY; });
+  addEventListener("pointerup", ()=>{ dragging=false; });
+  // load model
+  new THREE.GLTFLoader().load("assets/spidey_chibi.glb", gltf=>{
+    const m = gltf.scene;
+    const box = new THREE.Box3().setFromObject(m);
+    const center = box.getCenter(new THREE.Vector3());
+    const size = box.getSize(new THREE.Vector3());
+    const sc = 2.2 / (size.y||1);
+    m.scale.set(sc,sc,sc);
+    m.position.sub(center.multiplyScalar(sc)); m.position.y += 1.1;
+    scene.add(m); state.spidey = m; state.boxSize = size.clone().multiplyScalar(sc);
+    build3DItems(state); sync3DItems();
+  }, undefined, err=>{ console.warn("3D load fail", err); });
+  const clock = new THREE.Clock();
+  (function animate(){
+    requestAnimationFrame(animate);
+    if(!state.renderer) return;
+    const t = clock.getElapsedTime();
+    if(state.spidey){ state.spidey.rotation.y = state.rotY + Math.sin(t*0.5)*0.03;
+      state.spidey.rotation.x = state.rotX;
+      state.spidey.position.y = 1.1 + Math.sin(t*1.8)*0.03; }
+    renderer.render(scene, camera);
+  })();
 }
+function build3DItems(st){
+  // Model local coords: spans y -1.1 to +1.1, head at top (chibi big head)
+  // Party hat
+  const hat = new THREE.Group();
+  const cone = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.42, 20),
+    new THREE.MeshStandardMaterial({color:0xffd93b, roughness:.4}));
+  cone.position.y = 0.21; hat.add(cone);
+  const pom = new THREE.Mesh(new THREE.SphereGeometry(0.06, 12, 12),
+    new THREE.MeshStandardMaterial({color:0xff6b6b}));
+  pom.position.y = 0.44; hat.add(pom);
+  hat.position.set(0.06, 1.15, 0); hat.rotation.z = -0.18; hat.visible = false;
+  st.spidey.add(hat); st.items.hat = hat;
+  // Star glasses (round gold frames)
+  const gg = new THREE.Group();
+  const gm = new THREE.MeshStandardMaterial({color:0xffd93b, roughness:.3, metalness:.4});
+  [-1,1].forEach(s=>{
+    const lens = new THREE.Mesh(new THREE.TorusGeometry(0.1, 0.028, 10, 20), gm);
+    lens.position.x = 0.17*s; gg.add(lens);
+  });
+  const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.08,0.03,0.03), gm); gg.add(bridge);
+  gg.position.set(0, 0.72, 0.42); gg.visible = false;
+  st.spidey.add(gg); st.items.glasses = gg;
+  // Cape
+  const shape = new THREE.Shape();
+  shape.moveTo(-0.38,0); shape.quadraticCurveTo(0,-1.2,0.38,0); shape.lineTo(-0.38,0);
+  const cape = new THREE.Mesh(new THREE.ShapeGeometry(shape),
+    new THREE.MeshStandardMaterial({color:0x8b1a1a, side:THREE.DoubleSide, roughness:.7}));
+  cape.position.set(0, 0.45, -0.3); cape.visible = false;
+  st.spidey.add(cape); st.items.cape = cape;
+}
+function sync3DItems(){
+  if(!_c3d || !_c3d.items) return;
+  const eq = S.equipped || [];
+  // Map old item ids to 3D items: mask->glasses, cape->cape, hat (new)
+  if(_c3d.items.hat) _c3d.items.hat.visible = eq.includes("hat");
+  if(_c3d.items.glasses) _c3d.items.glasses.visible = eq.includes("mask");
+  if(_c3d.items.cape) _c3d.items.cape.visible = eq.includes("cape");
+}
+function renderDressUp(){ initCloset3D(); }
 /* ================= VIDEOS ================= */
 function renderVideos(){
   document.getElementById("videoList").innerHTML = LESSONS.slice(0,4).map((L,i)=>{
