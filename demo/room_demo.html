@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Demo Tủ đồ 3D - Phòng của Spidey</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,'Segoe UI',Roboto,sans-serif;background:#1a2340;overflow:hidden}
+  #app{position:fixed;inset:0}
+  #c3d{position:absolute;inset:0}
+  #c3d canvas{display:block}
+  .hud{position:absolute;left:0;right:0;pointer-events:none;z-index:5}
+  .hud.top{top:0;padding:14px 16px;display:flex;justify-content:space-between;align-items:center}
+  .title{background:rgba(20,28,60,.72);backdrop-filter:blur(8px);color:#fff;
+    padding:10px 18px;border-radius:999px;font-weight:700;font-size:16px;
+    border:1px solid rgba(255,255,255,.15)}
+  .hint{background:rgba(20,28,60,.72);backdrop-filter:blur(8px);color:#cfe0ff;
+    padding:10px 16px;border-radius:999px;font-size:13px;border:1px solid rgba(255,255,255,.15)}
+  .hud.bottom{bottom:0;padding:14px 16px 20px;display:flex;flex-direction:column;gap:10px;align-items:center}
+  .items{display:flex;gap:10px;pointer-events:auto}
+  .itembtn{width:64px;height:64px;border-radius:18px;border:2px solid rgba(255,255,255,.25);
+    background:rgba(30,40,80,.8);backdrop-filter:blur(8px);font-size:28px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;transition:transform .15s,border-color .15s}
+  .itembtn:active{transform:scale(.92)}
+  .itembtn.on{border-color:#ffd93b;box-shadow:0 0 16px rgba(255,217,59,.5)}
+  .itembtn small{position:absolute;bottom:2px;font-size:9px;color:#fff}
+  .itembtn{position:relative}
+  #loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    color:#fff;font-size:16px;z-index:10;background:radial-gradient(circle at 50% 35%,#2c3f7a,#141b38)}
+  .spin{width:44px;height:44px;border:4px solid rgba(255,255,255,.2);border-top-color:#ffd93b;
+    border-radius:50%;animation:sp 1s linear infinite;margin:0 auto 12px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+</style>
+<script src="https://spidey-english-88.vercel.app/assets/three.min.js"></script>
+<script src="https://spidey-english-88.vercel.app/assets/GLTFLoader.js"></script>
+</head>
+<body>
+<div id="app">
+  <div id="c3d"></div>
+  <div id="loading"><div><div class="spin"></div>Đang dựng phòng của Spidey...</div></div>
+  <div class="hud top">
+    <div class="title">🕷️ Phòng của Spidey</div>
+    <div class="hint">Kéo để xoay • Chụm để zoom</div>
+  </div>
+  <div class="hud bottom">
+    <div class="items">
+      <button class="itembtn" data-item="hat">🎩<small>Mũ</small></button>
+      <button class="itembtn" data-item="glasses">🕶️<small>Kính</small></button>
+      <button class="itembtn" data-item="cape">🦸<small>Choàng</small></button>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  const container = document.getElementById('c3d');
+  const loading = document.getElementById('loading');
+  const W = () => container.clientWidth || innerWidth;
+  const H = () => container.clientHeight || innerHeight;
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x1a2340);
+  scene.fog = new THREE.Fog(0x1a2340, 12, 26);
+
+  const camera = new THREE.PerspectiveCamera(42, W()/H(), 0.1, 100);
+  camera.position.set(0, 2.6, 7.2);
+  camera.lookAt(0, 1.3, 0);
+
+  const renderer = new THREE.WebGLRenderer({antialias:true});
+  renderer.setSize(W(), H());
+  renderer.setPixelRatio(Math.min(devicePixelRatio||1, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  container.appendChild(renderer.domElement);
+
+  // ===== LIGHTING: warm cozy room =====
+  scene.add(new THREE.AmbientLight(0x8a9cc8, 0.55));
+  const sun = new THREE.DirectionalLight(0xfff2dd, 1.1);
+  sun.position.set(5, 8, 6);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048);
+  sun.shadow.camera.left = -8; sun.shadow.camera.right = 8;
+  sun.shadow.camera.top = 8; sun.shadow.camera.bottom = -8;
+  scene.add(sun);
+  // Warm lamp light
+  const lampLight = new THREE.PointLight(0xffc978, 0.9, 12);
+  lampLight.position.set(-3.2, 3.4, 1.5);
+  scene.add(lampLight);
+  // Cool rim
+  const rim = new THREE.DirectionalLight(0x6a8cff, 0.35);
+  rim.position.set(-5, 4, -6);
+  scene.add(rim);
+
+  // ===== MATERIALS =====
+  const M = {
+    floor: new THREE.MeshStandardMaterial({color:0x9a6b4f, roughness:.85}),
+    floorDark: new THREE.MeshStandardMaterial({color:0x7d5540, roughness:.85}),
+    wall: new THREE.MeshStandardMaterial({color:0x3d4a7a, roughness:.95}),
+    wallAccent: new THREE.MeshStandardMaterial({color:0x2c3760, roughness:.95}),
+    wood: new THREE.MeshStandardMaterial({color:0x6b4a32, roughness:.7}),
+    woodLight: new THREE.MeshStandardMaterial({color:0x8a6247, roughness:.7}),
+    rug: new THREE.MeshStandardMaterial({color:0xc23b4e, roughness:.95}),
+    rugInner: new THREE.MeshStandardMaterial({color:0xe8b64c, roughness:.95}),
+    lampShade: new THREE.MeshStandardMaterial({color:0xffd9a0, roughness:.6, emissive:0xff9c4a, emissiveIntensity:.35}),
+    white: new THREE.MeshStandardMaterial({color:0xf5f0e8, roughness:.8}),
+    poster: new THREE.MeshStandardMaterial({color:0xd94f4f, roughness:.8}),
+  };
+
+  // ===== ROOM: floor =====
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(24, 24), M.floor);
+  floor.rotation.x = -Math.PI/2;
+  floor.receiveShadow = true;
+  scene.add(floor);
+  // Wood plank lines
+  for(let i=-5;i<=5;i++){
+    const line = new THREE.Mesh(new THREE.BoxGeometry(24, 0.012, 0.06), M.floorDark);
+    line.position.set(0, 0.006, i*1.6);
+    line.receiveShadow = true;
+    scene.add(line);
+  }
+
+  // ===== ROOM: back wall + side walls =====
+  const backWall = new THREE.Mesh(new THREE.PlaneGeometry(24, 10), M.wall);
+  backWall.position.set(0, 5, -7);
+  backWall.receiveShadow = true;
+  scene.add(backWall);
+  // Accent stripe on wall
+  const stripe = new THREE.Mesh(new THREE.PlaneGeometry(24, 1.2), M.wallAccent);
+  stripe.position.set(0, 2.2, -6.98);
+  scene.add(stripe);
+
+  const leftWall = new THREE.Mesh(new THREE.PlaneGeometry(24, 10), M.wall);
+  leftWall.rotation.y = Math.PI/2;
+  leftWall.position.set(-9, 5, 0);
+  scene.add(leftWall);
+  const rightWall = new THREE.Mesh(new THREE.PlaneGeometry(24, 10), M.wall);
+  rightWall.rotation.y = -Math.PI/2;
+  rightWall.position.set(9, 5, 0);
+  scene.add(rightWall);
+
+  // ===== WINDOW with night city glow =====
+  const winFrame = new THREE.Mesh(new THREE.BoxGeometry(3.4, 2.6, 0.15), M.wood);
+  winFrame.position.set(4.5, 4.2, -6.9);
+  winFrame.castShadow = true;
+  scene.add(winFrame);
+  const winGlass = new THREE.Mesh(new THREE.PlaneGeometry(3.0, 2.2),
+    new THREE.MeshBasicMaterial({color:0x0e1a3d}));
+  winGlass.position.set(4.5, 4.2, -6.8);
+  scene.add(winGlass);
+  // City lights (small glowing dots)
+  for(let i=0;i<24;i++){
+    const dot = new THREE.Mesh(new THREE.SphereGeometry(0.035, 6, 6),
+      new THREE.MeshBasicMaterial({color: Math.random()>0.5 ? 0xffd76a : 0x7ac8ff}));
+    dot.position.set(4.5 + (Math.random()-0.5)*2.7, 3.4 + Math.random()*1.8, -6.75);
+    scene.add(dot);
+  }
+  // Window cross
+  const crossV = new THREE.Mesh(new THREE.BoxGeometry(0.08, 2.2, 0.05), M.wood);
+  crossV.position.set(4.5, 4.2, -6.78); scene.add(crossV);
+  const crossH = new THREE.Mesh(new THREE.BoxGeometry(3.0, 0.08, 0.05), M.wood);
+  crossH.position.set(4.5, 4.2, -6.78); scene.add(crossH);
+
+  // ===== SPIDEY POSTER on wall =====
+  const poster = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 2.2), M.poster);
+  poster.position.set(-4.2, 4.3, -6.95);
+  poster.rotation.z = 0.04;
+  scene.add(poster);
+  const posterInner = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 1.9),
+    new THREE.MeshBasicMaterial({color:0x1a2340}));
+  posterInner.position.set(-4.2, 4.3, -6.93);
+  posterInner.rotation.z = 0.04;
+  scene.add(posterInner);
+
+  // ===== WARDROBE (tủ quần áo) =====
+  const wardrobe = new THREE.Group();
+  const wbBody = new THREE.Mesh(new THREE.BoxGeometry(2.2, 3.4, 1.0), M.wood);
+  wbBody.position.y = 1.7; wbBody.castShadow = true; wbBody.receiveShadow = true;
+  wardrobe.add(wbBody);
+  // Doors
+  [-0.53, 0.53].forEach(function(x){
+    const door = new THREE.Mesh(new THREE.BoxGeometry(0.95, 3.0, 0.06), M.woodLight);
+    door.position.set(x, 1.65, 0.52);
+    door.castShadow = true;
+    wardrobe.add(door);
+    const knob = new THREE.Mesh(new THREE.SphereGeometry(0.06, 10, 10),
+      new THREE.MeshStandardMaterial({color:0xffd93b, metalness:.7, roughness:.3}));
+    knob.position.set(x*0.35, 1.65, 0.58);
+    wardrobe.add(knob);
+  });
+  // Top trim
+  const trim = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.12, 1.1), M.woodLight);
+  trim.position.y = 3.45; trim.castShadow = true;
+  wardrobe.add(trim);
+  wardrobe.position.set(-4.6, 0, -4.2);
+  wardrobe.rotation.y = 0.25;
+  scene.add(wardrobe);
+
+  // ===== LAMP (đèn đứng) =====
+  const lamp = new THREE.Group();
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.34, 0.08, 16), M.wood);
+  base.position.y = 0.04; base.castShadow = true;
+  lamp.add(base);
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 3.2, 10), M.wood);
+  pole.position.y = 1.65; pole.castShadow = true;
+  lamp.add(pole);
+  const shade = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.55, 0.6, 16, 1, true), M.lampShade);
+  shade.position.y = 3.35;
+  lamp.add(shade);
+  const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.09, 10, 10),
+    new THREE.MeshBasicMaterial({color:0xffe9b8}));
+  bulb.position.y = 3.25;
+  lamp.add(bulb);
+  lamp.position.set(-3.2, 0, 1.5);
+  scene.add(lamp);
+
+  // ===== RUG (thảm tròn) =====
+  const rug = new THREE.Mesh(new THREE.CylinderGeometry(1.9, 1.9, 0.04, 40), M.rug);
+  rug.position.set(0, 0.02, 0.3);
+  rug.receiveShadow = true;
+  scene.add(rug);
+  const rugIn = new THREE.Mesh(new THREE.CylinderGeometry(1.25, 1.25, 0.045, 40), M.rugInner);
+  rugIn.position.set(0, 0.022, 0.3);
+  rugIn.receiveShadow = true;
+  scene.add(rugIn);
+  const rugC = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 0.05, 32), M.rug);
+  rugC.position.set(0, 0.024, 0.3);
+  scene.add(rugC);
+
+  // ===== TOY BOX (hộp đồ chơi) =====
+  const toyBox = new THREE.Group();
+  const tb = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.7, 0.8),
+    new THREE.MeshStandardMaterial({color:0x3b7ac2, roughness:.7}));
+  tb.position.y = 0.35; tb.castShadow = true; tb.receiveShadow = true;
+  toyBox.add(tb);
+  const tbLid = new THREE.Mesh(new THREE.BoxGeometry(1.16, 0.1, 0.86),
+    new THREE.MeshStandardMaterial({color:0x2c5fa0, roughness:.7}));
+  tbLid.position.y = 0.74; tbLid.castShadow = true;
+  toyBox.add(tbLid);
+  // Spider logo on box
+  const logoDot = new THREE.Mesh(new THREE.SphereGeometry(0.12, 10, 10),
+    new THREE.MeshBasicMaterial({color:0xd94f4f}));
+  logoDot.position.set(0, 0.4, 0.41);
+  toyBox.add(logoDot);
+  toyBox.position.set(3.4, 0, -1.5);
+  toyBox.rotation.y = -0.3;
+  scene.add(toyBox);
+
+  // ===== SPIDEY MODEL =====
+  let spidey = null;
+  const items = {};
+  let rotY = 0.35, rotX = 0;
+
+  new THREE.GLTFLoader().load('https://spidey-english-88.vercel.app/assets/spidey_chibi.glb',
+    function(gltf){
+      const m = gltf.scene;
+      m.traverse(function(o){ if(o.isMesh){ o.castShadow = true; } });
+      const box = new THREE.Box3().setFromObject(m);
+      const center = box.getCenter(new THREE.Vector3());
+      const size = box.getSize(new THREE.Vector3());
+      const sc = 2.0 / (size.y || 1);
+      m.scale.set(sc, sc, sc);
+      m.position.sub(center.multiplyScalar(sc));
+      m.position.y += 1.0;
+      m.position.z = 0.3;
+      m.rotation.y = rotY;
+      scene.add(m);
+      spidey = m;
+      buildItems();
+      loading.style.display = 'none';
+      startLoop();
+    },
+    undefined,
+    function(){ loading.innerHTML = '<div>❌ Không tải được mô hình</div>'; }
+  );
+
+  function buildItems(){
+    // Party hat
+    const hat = new THREE.Group();
+    const cone = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.44, 20),
+      new THREE.MeshStandardMaterial({color:0xffd93b, roughness:.4}));
+    cone.position.y = 0.22; cone.castShadow = true; hat.add(cone);
+    const pom = new THREE.Mesh(new THREE.SphereGeometry(0.065, 12, 12),
+      new THREE.MeshStandardMaterial({color:0xff6b6b}));
+    pom.position.y = 0.46; hat.add(pom);
+    // Hat band
+    const band = new THREE.Mesh(new THREE.TorusGeometry(0.19, 0.03, 8, 20),
+      new THREE.MeshStandardMaterial({color:0xff6b6b}));
+    band.rotation.x = Math.PI/2; band.position.y = 0.02; hat.add(band);
+    hat.position.set(0.07, 1.12, 0); hat.rotation.z = -0.16;
+    hat.visible = false;
+    spidey.add(hat); items.hat = hat;
+
+    // Star glasses
+    const gg = new THREE.Group();
+    const gm = new THREE.MeshStandardMaterial({color:0xffd93b, roughness:.25, metalness:.5});
+    [-1,1].forEach(function(sg){
+      const lens = new THREE.Mesh(new THREE.TorusGeometry(0.105, 0.03, 10, 22), gm);
+      lens.position.x = 0.18*sg; lens.castShadow = true; gg.add(lens);
+      // star in lens
+      const star = new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 8),
+        new THREE.MeshBasicMaterial({color:0xfff2b0}));
+      star.position.set(0.18*sg, 0, 0.02); gg.add(star);
+    });
+    const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.032, 0.032), gm);
+    gg.add(bridge);
+    gg.position.set(0, 0.7, 0.44);
+    gg.visible = false;
+    spidey.add(gg); items.glasses = gg;
+
+    // Cape
+    const shape = new THREE.Shape();
+    shape.moveTo(-0.4, 0);
+    shape.quadraticCurveTo(-0.3, -0.7, 0, -1.25);
+    shape.quadraticCurveTo(0.3, -0.7, 0.4, 0);
+    shape.lineTo(-0.4, 0);
+    const cape = new THREE.Mesh(new THREE.ShapeGeometry(shape, 12),
+      new THREE.MeshStandardMaterial({color:0x9c1f2e, side:THREE.DoubleSide, roughness:.65}));
+    cape.position.set(0, 0.42, -0.3);
+    cape.rotation.x = 0.12;
+    cape.castShadow = true;
+    cape.visible = false;
+    spidey.add(cape); items.cape = cape;
+  }
+
+  // ===== INTERACTION =====
+  let dragging = false, px = 0, py = 0, pinchD = 0;
+  const cv = renderer.domElement;
+  cv.style.touchAction = 'none';
+  cv.addEventListener('pointerdown', function(e){
+    dragging = true; px = e.clientX; py = e.clientY;
+    try{ cv.setPointerCapture(e.pointerId); }catch(_){}
+  });
+  cv.addEventListener('pointermove', function(e){
+    if(!dragging || !spidey) return;
+    rotY += (e.clientX-px)*0.012;
+    rotX += (e.clientY-py)*0.006;
+    rotX = Math.max(-0.5, Math.min(0.5, rotX));
+    px = e.clientX; py = e.clientY;
+  });
+  const endDrag = function(){ dragging = false; };
+  cv.addEventListener('pointerup', endDrag);
+  cv.addEventListener('pointercancel', endDrag);
+  // Pinch zoom
+  cv.addEventListener('wheel', function(e){
+    e.preventDefault();
+    camera.position.z = Math.max(4, Math.min(11, camera.position.z + e.deltaY*0.01));
+  }, {passive:false});
+
+  // Item buttons
+  document.querySelectorAll('.itembtn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      const id = btn.getAttribute('data-item');
+      const key = id === 'glasses' ? 'glasses' : id;
+      if(items[key]){
+        items[key].visible = !items[key].visible;
+        btn.classList.toggle('on', items[key].visible);
+      }
+    });
+  });
+
+  // ===== RENDER LOOP =====
+  const clock = new THREE.Clock();
+  function startLoop(){
+    (function animate(){
+      requestAnimationFrame(animate);
+      const t = clock.getElapsedTime();
+      if(spidey){
+        spidey.rotation.y = rotY + Math.sin(t*0.7)*0.03;
+        spidey.rotation.x = rotX;
+        spidey.position.y = 1.0 + Math.sin(t*2)*0.03;
+      }
+      // Gentle lamp flicker
+      lampLight.intensity = 0.9 + Math.sin(t*7)*0.03;
+      renderer.render(scene, camera);
+    })();
+  }
+
+  addEventListener('resize', function(){
+    camera.aspect = W()/H();
+    camera.updateProjectionMatrix();
+    renderer.setSize(W(), H());
+  });
+})();
+</script>
+</body>
+</html>
