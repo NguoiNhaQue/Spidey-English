@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tủ Đồ - Chọn Bộ</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    color: white;
+  }
+  h1 { margin-bottom: 10px; font-size: 24px; }
+  .subtitle { opacity: 0.7; margin-bottom: 20px; font-size: 14px; }
+  .stage {
+    position: relative;
+    width: min(400px, 90vw);
+    aspect-ratio: 1 / 2.1;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .stage img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    transition: opacity 0.3s;
+  }
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    max-width: 500px;
+  }
+  .btn {
+    padding: 12px 20px;
+    border: 2px solid #fff3;
+    border-radius: 25px;
+    background: #ffffff15;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn:hover { background: #ffffff25; }
+  .btn.active {
+    background: #4CAF50;
+    border-color: #4CAF50;
+  }
+  .btn .icon { margin-right: 6px; }
+  .set-name {
+    margin-top: 15px;
+    font-size: 18px;
+    font-weight: bold;
+    min-height: 25px;
+  }
+</style>
+</head>
+<body>
+  <h1>🎮 Tủ Đồ - Chọn Bộ</h1>
+  <div class="subtitle">Mỗi bộ là 1 ảnh render hoàn chỉnh, khớp từng pixel</div>
+  
+  <div class="stage">
+    <img id="character" src="assets_sets/set_base.png" alt="character">
+  </div>
+  <div class="set-name" id="setName">Bộ cơ bản</div>
+  
+  <div class="controls">
+    <button class="btn active" data-set="set_base.png" data-name="Bộ cơ bản"><span class="icon">👕</span>Cơ bản</button>
+    <button class="btn" data-set="set_cool.png" data-name="Bộ ngầu (giày + kính)"><span class="icon">😎</span>Ngầu</button>
+    <button class="btn" data-set="set_fun.png" data-name="Bộ vui (giày + găng + mũ)"><span class="icon">🎉</span>Vui</button>
+    <button class="btn" data-set="set_full.png" data-name="Bộ full (6 món)"><span class="icon">🦸</span>Full</button>
+  </div>
+
+<script>
+  const img = document.getElementById('character');
+  const setName = document.getElementById('setName');
+  document.querySelectorAll('.btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      img.style.opacity = '0';
+      setTimeout(() => {
+        img.src = 'assets_sets/' + btn.dataset.set;
+        setName.textContent = btn.dataset.name;
+        img.onload = () => { img.style.opacity = '1'; };
+      }, 200);
+    });
+  });
+</script>
+</body>
+</html>
