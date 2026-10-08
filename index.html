@@ -134,68 +134,6 @@
   .closet-item.equipped { border-color: #f4a300; background: #fff8e6; box-shadow: 0 4px 0 #f4a300; }
   .closet-item.locked { opacity: .55; }
   .closet-item.locked img { filter: grayscale(1) brightness(.4); }
-  /* Beautiful 2D closet */
-  .closet-hero {
-    background: url('assets/bedroom_bg.jpg') center/cover no-repeat;
-    border: none; position: relative; overflow: hidden;
-    min-height: 480px;
-  }
-  .closet-hero::before {
-    content: ""; position: absolute; inset: 0;
-    background: linear-gradient(180deg, rgba(20,30,70,.25) 0%, rgba(20,30,70,0) 40%, rgba(20,30,70,.35) 100%);
-    pointer-events: none; z-index: 0;
-  }
-  .closet-hero h4 { color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,.3); position: relative; z-index: 2; }
-  .closet-hero .dress-stage {
-    background: transparent;
-    border-radius: 24px; padding: 8px; position: relative; z-index: 1;
-    border: none; box-shadow: none;
-  }
-  .closet-hero .dress-base {
-    filter: drop-shadow(0 10px 20px rgba(0,0,0,.35));
-  }
-  .closet-hero .equipped-chips { position: relative; z-index: 2; margin: 10px 0 2px; }
-  .closet-hero .equipped-chips span {
-    background: rgba(255,217,59,.92); color: #5a3d00;
-    padding: 5px 14px; border-radius: 999px; font-size: .78rem; font-weight: 800;
-    margin: 2px 4px; display: inline-block; box-shadow: 0 2px 8px rgba(0,0,0,.2);
-  }
-  /* Pop-in animation for newly equipped items */
-  @keyframes popIn {
-    0% { transform: translate(-50%,-50%) scale(0.3); opacity: 0; }
-    60% { transform: translate(-50%,-50%) scale(1.15); opacity: 1; }
-    100% { transform: translate(-50%,-50%) scale(1); opacity: 1; }
-  }
-  .dress-item.pop-in { animation: popIn .45s cubic-bezier(.34,1.56,.64,1); }
-  /* Enhanced item cards */
-  .closet-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
-  .closet-item {
-    background: linear-gradient(165deg, #ffffff, #f0f5ff);
-    border: 3px solid #bcd6f5; border-radius: 18px; padding: 10px 6px;
-    text-align: center; cursor: pointer;
-    box-shadow: 0 4px 0 #bcd6f5, 0 6px 16px rgba(30,60,120,.08);
-    transition: transform .15s, box-shadow .15s;
-    position: relative; overflow: hidden;
-  }
-  .closet-item:active { transform: translateY(3px) scale(.97); box-shadow: 0 1px 0 #bcd6f5; }
-  .closet-item img { width: 72px; height: 72px; object-fit: contain; filter: drop-shadow(0 3px 6px rgba(0,0,0,.15)); }
-  .closet-item .nm { font-size: .78rem; font-weight: 800; margin-top: 6px; color: #1c2b4a; }
-  .closet-item .rw { font-size: .65rem; font-weight: 700; margin-top: 2px; }
-  .closet-item .rw.Hiếm { color: #b45fd6; }
-  .closet-item .rw.Thường { color: #5b8dd6; }
-  .closet-item .rw.Đặc { color: #e09b00; }
-  .closet-item.equipped {
-    border-color: #f4a300;
-    background: linear-gradient(165deg, #fffbe8, #fff3c4);
-    box-shadow: 0 4px 0 #f4a300, 0 6px 20px rgba(244,163,0,.3);
-  }
-  .closet-item.equipped::after {
-    content: "✓"; position: absolute; top: 6px; right: 8px;
-    background: #f4a300; color: #fff; width: 22px; height: 22px;
-    border-radius: 50%; font-size: 13px; font-weight: 900;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 2px 6px rgba(0,0,0,.2);
-  }
   /* PARENT */
   .pinpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 260px; margin: 14px auto; }
   .pinpad button { padding: 15px; font-size: 1.25rem; font-weight: 800; border-radius: 16px; border: none; background: #fff; color: #1c2b4a; cursor: pointer; box-shadow: 0 4px 0 #bcd6f5; }
@@ -227,8 +165,21 @@
 .say-en{display:flex;align-items:center;gap:8px;background:#fff;border-radius:14px;padding:8px 12px;margin:10px 0;box-shadow:0 4px 10px rgba(30,60,120,.12);}
 .say-en .en-line{flex:1;font-weight:700;color:#1d5fd1;font-size:.92rem;}
 .mini-spk{border:none;background:#e63946;color:#fff;border-radius:50%;width:38px;height:38px;font-size:1.1rem;cursor:pointer;flex-shrink:0;}
+/* Matching game (Part 2) */
+.match-board{display:flex;gap:14px;justify-content:center;margin:12px 0;}
+.match-col{display:flex;flex-direction:column;gap:10px;flex:1;max-width:200px;}
+.match-col-title{text-align:center;font-size:.85rem;color:#5b7a99;margin-bottom:2px;}
+.match-card{aspect-ratio:1.4;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;font-weight:700;transition:transform .2s,box-shadow .2s,opacity .3s;border:3px solid transparent;overflow:hidden;background:#eef3f9;color:#1d5fd1;text-align:center;padding:8px;}
+.match-card.pic{background-size:cover;background-position:center;}
+.match-card.selected{border-color:#FFD700;box-shadow:0 0 12px #FFD700;transform:scale(1.05);}
+.match-card.matched{opacity:0;pointer-events:none;transform:scale(.8);}
+.match-card.wrong{animation:mshake .4s;border-color:#e63946;}
+@keyframes mshake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+.match-card.okflash{border-color:#4CAF50;box-shadow:0 0 16px #4CAF50;}
+.mstar{position:fixed;font-size:26px;pointer-events:none;z-index:9999;transition:all .8s cubic-bezier(.25,.46,.45,.94);}
 </style>
-
+<script src="https://unpkg.com/three@0.147.0/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.147.0/examples/js/loaders/GLTFLoader.js"></script>
 </head>
 <body>
 <div class="phone">
@@ -292,15 +243,12 @@
       </div>
     </section>
     <section class="screen" id="s-closet">
-      <div class="card closet-hero">
-        <h4>🕷️ Tủ đồ của Spidey</h4>
-        <div class="dress-stage" id="dressStage">
-          <img class="dress-base" src="assets/a06_fixed.png" alt="Spidey">
-        </div>
-        <div class="equipped-chips" id="closetChips"></div>
-      </div>
-      <div class="card">
-        <h4>🎒 Chạm để mặc / tháo đồ</h4>
+      <div class="card" style="text-align:center">
+        <h4>🕷️ Spidey 3D của bạn</h4>
+        <p style="font-size:.8rem;color:#5b7a99">Kéo để xoay • Chụm để zoom</p>
+        <div id="closet3d" style="width:100%;height:380px;border-radius:16px;overflow:hidden;background:radial-gradient(circle at 50% 30%,#3a5ac8,#1a2a6c);touch-action:none;margin:8px 0"></div>
+        <div class="equipped-chips" id="closetChips" style="margin:8px 0"></div>
+        <h4>🎒 Chạm để mặc / tháo đồ cho Spidey</h4>
         <div class="closet-grid" id="closetGrid"></div>
       </div>
     </section>
@@ -361,18 +309,12 @@ const LESSONS = [
     quiz:[{en:"Touch the wake up!",vi:"Chạm vào thức dậy nhé!",options:["sun","wash","wake up"],answer:2},{en:"Touch the morning!",vi:"Chạm vào buổi sáng nhé!",options:["brush","mirror","morning"],answer:2},{en:"Touch the sun!",vi:"Chạm vào mặt trời nhé!",options:["wash","sun","comb"],answer:1},{en:"Touch the bed!",vi:"Chạm vào giường nhé!",options:["towel","toothpaste","bed"],answer:2},{en:"Touch the brush!",vi:"Chạm vào đánh / chải nhé!",options:["morning","bed","brush"],answer:2},{en:"Touch the teeth!",vi:"Chạm vào răng nhé!",options:["teeth","water","bed"],answer:0},{en:"Touch the toothbrush!",vi:"Chạm vào bàn chải nhé!",options:["toothbrush","bed","face"],answer:0},{en:"Touch the toothpaste!",vi:"Chạm vào kem đánh răng nhé!",options:["wake up","hair","toothpaste"],answer:2},{en:"Touch the face!",vi:"Chạm vào khuôn mặt nhé!",options:["teeth","brush","face"],answer:2},{en:"Touch the water!",vi:"Chạm vào nước nhé!",options:["hair","teeth","water"],answer:2},{en:"Touch the towel!",vi:"Chạm vào khăn nhé!",options:["towel","morning","toothbrush"],answer:0},{en:"Touch the wash!",vi:"Chạm vào rửa nhé!",options:["brush","water","wash"],answer:2},{en:"Touch the comb!",vi:"Chạm vào cái lược nhé!",options:["morning","comb","face"],answer:1},{en:"Touch the hair!",vi:"Chạm vào tóc nhé!",options:["hair","face","brush"],answer:0},{en:"Touch the mirror!",vi:"Chạm vào gương nhé!",options:["water","mirror","bed"],answer:1}],
     loot:{img:"assets/a39.webp", name:"Giày Spidey", rarity:"rare", rarityLabel:"HIẾM", itemId:"shoes"} }
 ];
-const TIER1 = ["shoes","gloves","mask","cape","sword","hat"];
-const TIER2 = ["shoes2","cape2","sword2"];
 const ITEMS = [
-  {id:"shoes", img:"assets/a40.webp", name:"Giày Spidey", rarity:"Hiếm", tier:1},
-  {id:"gloves", img:"assets/a43.webp", name:"Găng tay", rarity:"Thường", tier:1, locked:true},
-  {id:"mask", img:"assets/a42.webp", name:"Kính sao", rarity:"Hiếm", tier:1, locked:true},
-  {id:"cape", img:"assets/a41.webp", name:"Áo choàng", rarity:"Hiếm", tier:1, locked:true},
-  {id:"sword", img:"assets/item_sword.png", name:"Kiếm Spidey", rarity:"Hiếm", tier:1, locked:true},
-  {id:"hat", img:"assets/a40.webp", name:"Mũ tiệc", rarity:"Đặc biệt", tier:1, locked:true},
-  {id:"shoes2", img:"assets/item_shoes2.png", name:"Giày phản lực 🚀", rarity:"Sử thi", tier:2, locked:true},
-  {id:"cape2", img:"assets/item_cape2.png", name:"Áo choàng phát sáng ✨", rarity:"Sử thi", tier:2, locked:true},
-  {id:"sword2", img:"assets/item_sword2.png", name:"Kiếm ánh sáng ⚔️", rarity:"Sử thi", tier:2, locked:true}
+  {id:"shoes", img:"assets/a40.webp", name:"Giày Spidey", rarity:"Hiếm"},
+  {id:"cape", img:"assets/a41.webp", name:"Áo choàng", rarity:"Hiếm", locked:true},
+  {id:"mask", img:"assets/a42.webp", name:"Kính sao", rarity:"Hiếm", locked:true},
+  {id:"gloves", img:"assets/a43.webp", name:"Găng tay", rarity:"Thường", locked:true},
+  {id:"hat", img:"assets/a40.webp", name:"Mũ tiệc", rarity:"Đặc biệt", locked:true}
 ];
 /* ================= STATE ================= */
 let S = JSON.parse(localStorage.getItem("spidey_proto2") || '{"done":[],"coins":0,"items":[],"equipped":[]}');
@@ -518,58 +460,100 @@ function renderCloset(){
     d.innerHTML='<img src="'+it.img+'" alt="'+it.name+'"><div class="nm">'+(owned?it.name:"???")+'</div><div class="rw">'+(owned?it.rarity:"Chưa mở khóa")+'</div>';
     d.onclick=()=>{ if(!owned){ toast("Chơi tiếp để mở khóa món này!"); return; }
       const ix=S.equipped.indexOf(it.id); if(ix>=0)S.equipped.splice(ix,1); else S.equipped.push(it.id);
-      save(); renderCloset(); };
+      save(); sync3DItems(); renderCloset(); };
     g.appendChild(d);
   });
 }
-/* ============ 2D CLOSET (beautiful) ============ */
-const DRESS_POS = {
-  hat:   {img:"assets/a44.png", l:50,   t:2,  w:44, z:3},
-  mask:  {img:"assets/a44.png", l:55.5, t:26, w:39, z:3},
-  cape:  {img:"assets/a45.png", l:51,   t:62, w:95, z:0},
-  glove_l:{img:"assets/a46.png",l:19.6, t:12.7,w:17, z:3},
-  glove_r:{img:"assets/a47.png",l:80.5, t:59.9,w:17, z:3},
-  shoe_l:{img:"assets/a48.png", l:23.3, t:90, w:24, z:3},
-  shoe_r:{img:"assets/a49.png", l:79.2, t:91, w:24, z:3},
-  sword: {img:"assets/item_sword.png", l:22, t:14, w:38, z:4, rot:-35},
-  shoe2_l:{img:"assets/item_shoes2.png", l:23.3, t:90, w:24, z:3},
-  shoe2_r:{img:"assets/item_shoes2.png", l:79.2, t:91, w:24, z:3},
-  cape2: {img:"assets/item_cape2.png", l:51, t:62, w:95, z:0},
-  sword2: {img:"assets/item_sword2.png", l:22, t:14, w:38, z:4, rot:-35}
-};
-function renderDressUp(){
-  const st = document.getElementById("dressStage");
-  if(!st) return;
-  st.querySelectorAll(".dress-item").forEach(e=>e.remove());
-  const add = (k, pop) => {
-    const p = DRESS_POS[k];
-    const im = document.createElement("img");
-    im.className = "dress-item" + (pop ? " pop-in" : "");
-    im.src = p.img;
-    let css = "left:"+p.l+"%;top:"+p.t+"%;width:"+p.w+"%;z-index:"+p.z+";";
-    if(p.rot) css += "transform:translate(-50%,-50%) rotate("+p.rot+"deg);";
-    im.style.cssText = css;
-    st.appendChild(im);
-  };
-  // Track newly equipped for pop animation
-  const prev = renderDressUp._prev || [];
-  const cur = S.equipped || [];
-  const isNew = (id) => cur.includes(id) && !prev.includes(id);
-  if(cur.includes("hat")) add("hat", isNew("hat"));
-  if(cur.includes("mask")) add("mask", isNew("mask"));
-  if(cur.includes("cape")) add("cape", isNew("cape"));
-  if(cur.includes("gloves")){ add("glove_l", isNew("gloves")); add("glove_r", false); }
-  // Shoes: tier 2 replaces tier 1 visually
-  if(cur.includes("shoes2")){ add("shoe2_l", isNew("shoes2")); add("shoe2_r", false); }
-  else if(cur.includes("shoes")){ add("shoe_l", isNew("shoes")); add("shoe_r", false); }
-  // Cape: tier 2 replaces tier 1
-  if(cur.includes("cape2")) add("cape2", isNew("cape2"));
-  else if(cur.includes("cape")) add("cape", isNew("cape"));
-  // Sword: tier 2 replaces tier 1
-  if(cur.includes("sword2")) add("sword2", isNew("sword2"));
-  else if(cur.includes("sword")) add("sword", isNew("sword"));
-  renderDressUp._prev = [...cur];
+/* ============ 3D CLOSET ============ */
+let _c3d = null;
+function initCloset3D(){
+  const el = document.getElementById("closet3d");
+  if(!el || typeof THREE === "undefined" || typeof THREE.GLTFLoader === "undefined") return;
+  if(_c3d && _c3d.el === el) { sync3DItems(); return; }
+  // cleanup old
+  if(_c3d && _c3d.renderer){ try{ _c3d.renderer.dispose(); }catch(e){} el.innerHTML=""; }
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(40, el.clientWidth/el.clientHeight, 0.1, 100);
+  camera.position.set(0, 1.2, 4.5); camera.lookAt(0, 0.8, 0);
+  const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+  renderer.setSize(el.clientWidth||300, el.clientHeight||380);
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  el.appendChild(renderer.domElement);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.9));
+  const key = new THREE.DirectionalLight(0xffffff, 1.2); key.position.set(3,6,4); scene.add(key);
+  const rim = new THREE.DirectionalLight(0xaaccff, 0.5); rim.position.set(-4,3,-3); scene.add(rim);
+  const state = {el, scene, camera, renderer, spidey:null, items:{}, rotY:0, rotX:0};
+  _c3d = state;
+  // drag rotate
+  let dragging=false, px=0, py=0;
+  const cv = renderer.domElement; cv.style.touchAction="none";
+  cv.addEventListener("pointerdown", e=>{ dragging=true; px=e.clientX; py=e.clientY; try{cv.setPointerCapture(e.pointerId);}catch(_){} });
+  addEventListener("pointermove", e=>{ if(!dragging||!state.spidey) return;
+    state.rotY += (e.clientX-px)*0.012; state.rotX += (e.clientY-py)*0.006;
+    state.rotX = Math.max(-0.6, Math.min(0.6, state.rotX)); px=e.clientX; py=e.clientY; });
+  addEventListener("pointerup", ()=>{ dragging=false; });
+  // load model
+  new THREE.GLTFLoader().load("assets/spidey_chibi.glb", gltf=>{
+    const m = gltf.scene;
+    const box = new THREE.Box3().setFromObject(m);
+    const center = box.getCenter(new THREE.Vector3());
+    const size = box.getSize(new THREE.Vector3());
+    const sc = 2.2 / (size.y||1);
+    m.scale.set(sc,sc,sc);
+    m.position.sub(center.multiplyScalar(sc)); m.position.y += 1.1;
+    scene.add(m); state.spidey = m; state.boxSize = size.clone().multiplyScalar(sc);
+    build3DItems(state); sync3DItems();
+  }, undefined, err=>{ console.warn("3D load fail", err); });
+  const clock = new THREE.Clock();
+  (function animate(){
+    requestAnimationFrame(animate);
+    if(!state.renderer) return;
+    const t = clock.getElapsedTime();
+    if(state.spidey){ state.spidey.rotation.y = state.rotY + Math.sin(t*0.5)*0.03;
+      state.spidey.rotation.x = state.rotX;
+      state.spidey.position.y = 1.1 + Math.sin(t*1.8)*0.03; }
+    renderer.render(scene, camera);
+  })();
 }
+function build3DItems(st){
+  // Model local coords: spans y -1.1 to +1.1, head at top (chibi big head)
+  // Party hat
+  const hat = new THREE.Group();
+  const cone = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.42, 20),
+    new THREE.MeshStandardMaterial({color:0xffd93b, roughness:.4}));
+  cone.position.y = 0.21; hat.add(cone);
+  const pom = new THREE.Mesh(new THREE.SphereGeometry(0.06, 12, 12),
+    new THREE.MeshStandardMaterial({color:0xff6b6b}));
+  pom.position.y = 0.44; hat.add(pom);
+  hat.position.set(0.06, 1.15, 0); hat.rotation.z = -0.18; hat.visible = false;
+  st.spidey.add(hat); st.items.hat = hat;
+  // Star glasses (round gold frames)
+  const gg = new THREE.Group();
+  const gm = new THREE.MeshStandardMaterial({color:0xffd93b, roughness:.3, metalness:.4});
+  [-1,1].forEach(s=>{
+    const lens = new THREE.Mesh(new THREE.TorusGeometry(0.1, 0.028, 10, 20), gm);
+    lens.position.x = 0.17*s; gg.add(lens);
+  });
+  const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.08,0.03,0.03), gm); gg.add(bridge);
+  gg.position.set(0, 0.72, 0.42); gg.visible = false;
+  st.spidey.add(gg); st.items.glasses = gg;
+  // Cape
+  const shape = new THREE.Shape();
+  shape.moveTo(-0.38,0); shape.quadraticCurveTo(0,-1.2,0.38,0); shape.lineTo(-0.38,0);
+  const cape = new THREE.Mesh(new THREE.ShapeGeometry(shape),
+    new THREE.MeshStandardMaterial({color:0x8b1a1a, side:THREE.DoubleSide, roughness:.7}));
+  cape.position.set(0, 0.45, -0.3); cape.visible = false;
+  st.spidey.add(cape); st.items.cape = cape;
+}
+function sync3DItems(){
+  if(!_c3d || !_c3d.items) return;
+  const eq = S.equipped || [];
+  // Map old item ids to 3D items: mask->glasses, cape->cape, hat (new)
+  if(_c3d.items.hat) _c3d.items.hat.visible = eq.includes("hat");
+  if(_c3d.items.glasses) _c3d.items.glasses.visible = eq.includes("mask");
+  if(_c3d.items.cape) _c3d.items.cape.visible = eq.includes("cape");
+}
+function renderDressUp(){ initCloset3D(); }
 /* ================= VIDEOS ================= */
 function renderVideos(){
   document.getElementById("videoList").innerHTML = LESSONS.slice(0,4).map((L,i)=>{
@@ -625,7 +609,7 @@ function renderStep(){
     document.querySelectorAll(".pyr-line").forEach(el=>{
       el.onclick=()=>{ const i=parseInt(el.dataset.i); speakLine(el, cur.pyramid[i], ()=>{ heardLines.add(i); el.classList.add("heard"); checkPyrDone(); }); };
     });
-  } else { startGame(B, ()=>finishLesson()); }
+  } else { startGame(B, ()=>startMatching(B, ()=>finishLesson())); }
 }
 function checkPyrDone(){ if(heardLines.size===cur.pyramid.length) document.getElementById("pyrDone").disabled=false; }
 function pyrDone(){ speak(cur.pyramid[cur.pyramid.length-1], 0.9); nextStep(); }
@@ -716,6 +700,81 @@ function pickWord(btn, w){
     else { speak("Try again!", 0.9); toast("Chưa đúng, thử lại nào!"); setTimeout(()=>renderGame(document.getElementById("lessonBody"),g,window._win),1000); }
   }
 }
+/* Part 2: Word-Picture Matching Game */
+function startMatching(B, onWin){
+  B=B||document.getElementById("lessonBody");
+  const vocab=cur.vocab;
+  let selPic=null, selWord=null, matchedCt=0, mlock=false;
+  const shuf=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+  const pics=shuf(vocab), words=shuf(vocab);
+  let inner='<div class="card" style="text-align:center"><h4>🧩 Mini-game — Phần 2: Nối từ với hình</h4>'
+    +'<p style="font-size:.85rem;color:#5b7a99">Bấm 1 thẻ hình, rồi bấm 1 thẻ chữ đúng với nó nhé!</p>'
+    +'<div style="color:#e6a800;font-weight:700;margin:6px 0">⭐ <span id="mScore">0</span> / '+vocab.length+'</div>'
+    +'<div class="match-board"><div class="match-col"><div class="match-col-title">🖼️ Hình</div><div id="mPicCol" style="display:flex;flex-direction:column;gap:10px;"></div></div>'
+    +'<div class="match-col"><div class="match-col-title">📝 Chữ</div><div id="mWordCol" style="display:flex;flex-direction:column;gap:10px;"></div></div></div>'
+    +'<div id="mMsg" style="font-size:1.05rem;min-height:28px;color:#2e9e4f;font-weight:700;"></div></div>';
+  B.innerHTML=inner;
+  const picCol=document.getElementById("mPicCol"), wordCol=document.getElementById("mWordCol");
+  pics.forEach(v=>{
+    const d=document.createElement("div");
+    d.className="match-card pic"; d.dataset.word=v[0];
+    d.style.backgroundImage="url('"+v[2]+"')";
+    d.onclick=()=>mClick(d,"pic");
+    picCol.appendChild(d);
+  });
+  words.forEach(v=>{
+    const d=document.createElement("div");
+    d.className="match-card"; d.dataset.word=v[0]; d.textContent=v[0];
+    d.onclick=()=>mClick(d,"word");
+    wordCol.appendChild(d);
+  });
+  speak("Match the words with the pictures!", 0.9);
+  function mClick(div,type){
+    if(mlock||div.classList.contains("matched"))return;
+    if(type==="pic"){ if(selPic)selPic.classList.remove("selected"); selPic=div; div.classList.add("selected"); }
+    else { if(selWord)selWord.classList.remove("selected"); selWord=div; div.classList.add("selected"); }
+    if(selPic&&selWord){
+      mlock=true;
+      if(selPic.dataset.word===selWord.dataset.word){
+        const w=selPic.dataset.word, pEl=selPic, wEl=selWord;
+        pEl.classList.add("okflash"); wEl.classList.add("okflash");
+        mFlyStar(wEl,pEl);
+        setTimeout(()=>{
+          pEl.classList.add("matched"); wEl.classList.add("matched");
+          selPic=null; selWord=null; mlock=false;
+          matchedCt++; document.getElementById("mScore").textContent=matchedCt;
+          speak(w,0.9); confetti();
+          if(matchedCt===vocab.length){
+            document.getElementById("mMsg").textContent="🎉 Tuyệt vời! Xong hết rồi!";
+            speak("Great job!",1);
+            setTimeout(()=>{ onWin&&onWin(); },1500);
+          }
+        },900);
+      }else{
+        selPic.classList.add("wrong"); selWord.classList.add("wrong");
+        speak("Try again!",0.9);
+        setTimeout(()=>{ selPic.classList.remove("selected","wrong"); selWord.classList.remove("selected","wrong"); selPic=null; selWord=null; mlock=false; },500);
+      }
+    }
+  }
+  function mFlyStar(fromEl,toEl){
+    const fr=fromEl.getBoundingClientRect(), tr=toEl.getBoundingClientRect();
+    for(let i=0;i<5;i++){
+      setTimeout(()=>{
+        const s=document.createElement("div"); s.className="mstar"; s.textContent="⭐";
+        s.style.left=(fr.left+fr.width/2-13+(Math.random()*36-18))+"px";
+        s.style.top=(fr.top+fr.height/2-13)+"px";
+        document.body.appendChild(s);
+        requestAnimationFrame(()=>{
+          s.style.left=(tr.left+tr.width/2-13+(Math.random()*26-13))+"px";
+          s.style.top=(tr.top+tr.height/2-13)+"px";
+          s.style.transform="scale(.3) rotate(360deg)"; s.style.opacity=".3";
+        });
+        setTimeout(()=>s.remove(),900);
+      },i*110);
+    }
+  }
+}
 function finishLesson(){
   stopSpeak();
   if(replay){ toast("Ôn tập xong! Giỏi lắm! 🎉"); }
@@ -751,25 +810,8 @@ function winBattle(){
   setTimeout(()=>{
     if(!replay){
       if(!S.done.includes(cur.id)){ S.done.push(cur.id); S.coins+=20; }
-      // Tier progression: complete all Tier 1 before Tier 2
-      const tier1Done = TIER1.every(id => S.items.includes(id));
-      let lootId = cur.loot.itemId;
-      // If loot is tier 2 but tier 1 not complete, give next missing tier 1 instead
-      const lootItem = itemById(lootId);
-      if(lootItem && lootItem.tier === 2 && !tier1Done){
-        const missing = TIER1.find(id => !S.items.includes(id));
-        if(missing) lootId = missing;
-      }
-      // If loot already owned, find next uncollected in same tier
-      if(S.items.includes(lootId)){
-        const tier = (itemById(lootId)||{}).tier || 1;
-        const pool = tier === 2 ? TIER2 : TIER1;
-        const next = pool.find(id => !S.items.includes(id));
-        if(next) lootId = next;
-      }
-      const it=itemById(lootId); it.locked=false;
+      const it=itemById(cur.loot.itemId); it.locked=false;
       if(!S.items.includes(it.id)) S.items.push(it.id);
-      cur.loot = {img:it.img, name:it.name, rarity:"rare", rarityLabel:it.rarity.toUpperCase(), itemId:it.id};
       save();
     }
     document.getElementById("lootImg").src=cur.loot.img;
