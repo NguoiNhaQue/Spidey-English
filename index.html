@@ -361,13 +361,18 @@ const LESSONS = [
     quiz:[{en:"Touch the wake up!",vi:"Chạm vào thức dậy nhé!",options:["sun","wash","wake up"],answer:2},{en:"Touch the morning!",vi:"Chạm vào buổi sáng nhé!",options:["brush","mirror","morning"],answer:2},{en:"Touch the sun!",vi:"Chạm vào mặt trời nhé!",options:["wash","sun","comb"],answer:1},{en:"Touch the bed!",vi:"Chạm vào giường nhé!",options:["towel","toothpaste","bed"],answer:2},{en:"Touch the brush!",vi:"Chạm vào đánh / chải nhé!",options:["morning","bed","brush"],answer:2},{en:"Touch the teeth!",vi:"Chạm vào răng nhé!",options:["teeth","water","bed"],answer:0},{en:"Touch the toothbrush!",vi:"Chạm vào bàn chải nhé!",options:["toothbrush","bed","face"],answer:0},{en:"Touch the toothpaste!",vi:"Chạm vào kem đánh răng nhé!",options:["wake up","hair","toothpaste"],answer:2},{en:"Touch the face!",vi:"Chạm vào khuôn mặt nhé!",options:["teeth","brush","face"],answer:2},{en:"Touch the water!",vi:"Chạm vào nước nhé!",options:["hair","teeth","water"],answer:2},{en:"Touch the towel!",vi:"Chạm vào khăn nhé!",options:["towel","morning","toothbrush"],answer:0},{en:"Touch the wash!",vi:"Chạm vào rửa nhé!",options:["brush","water","wash"],answer:2},{en:"Touch the comb!",vi:"Chạm vào cái lược nhé!",options:["morning","comb","face"],answer:1},{en:"Touch the hair!",vi:"Chạm vào tóc nhé!",options:["hair","face","brush"],answer:0},{en:"Touch the mirror!",vi:"Chạm vào gương nhé!",options:["water","mirror","bed"],answer:1}],
     loot:{img:"assets/a39.webp", name:"Giày Spidey", rarity:"rare", rarityLabel:"HIẾM", itemId:"shoes"} }
 ];
+const TIER1 = ["shoes","gloves","mask","cape","sword","hat"];
+const TIER2 = ["shoes2","cape2","sword2"];
 const ITEMS = [
-  {id:"shoes", img:"assets/a40.webp", name:"Giày Spidey", rarity:"Hiếm"},
-  {id:"cape", img:"assets/a41.webp", name:"Áo choàng", rarity:"Hiếm", locked:true},
-  {id:"mask", img:"assets/a42.webp", name:"Kính sao", rarity:"Hiếm", locked:true},
-  {id:"gloves", img:"assets/a43.webp", name:"Găng tay", rarity:"Thường", locked:true},
-  {id:"hat", img:"assets/a40.webp", name:"Mũ tiệc", rarity:"Đặc biệt", locked:true},
-  {id:"sword", img:"assets/item_sword.png", name:"Kiếm Spidey", rarity:"Hiếm", locked:true}
+  {id:"shoes", img:"assets/a40.webp", name:"Giày Spidey", rarity:"Hiếm", tier:1},
+  {id:"gloves", img:"assets/a43.webp", name:"Găng tay", rarity:"Thường", tier:1, locked:true},
+  {id:"mask", img:"assets/a42.webp", name:"Kính sao", rarity:"Hiếm", tier:1, locked:true},
+  {id:"cape", img:"assets/a41.webp", name:"Áo choàng", rarity:"Hiếm", tier:1, locked:true},
+  {id:"sword", img:"assets/item_sword.png", name:"Kiếm Spidey", rarity:"Hiếm", tier:1, locked:true},
+  {id:"hat", img:"assets/a40.webp", name:"Mũ tiệc", rarity:"Đặc biệt", tier:1, locked:true},
+  {id:"shoes2", img:"assets/item_shoes2.png", name:"Giày phản lực 🚀", rarity:"Sử thi", tier:2, locked:true},
+  {id:"cape2", img:"assets/item_cape2.png", name:"Áo choàng phát sáng ✨", rarity:"Sử thi", tier:2, locked:true},
+  {id:"sword2", img:"assets/item_sword2.png", name:"Kiếm ánh sáng ⚔️", rarity:"Sử thi", tier:2, locked:true}
 ];
 /* ================= STATE ================= */
 let S = JSON.parse(localStorage.getItem("spidey_proto2") || '{"done":[],"coins":0,"items":[],"equipped":[]}');
@@ -526,7 +531,11 @@ const DRESS_POS = {
   glove_r:{img:"assets/a47.png",l:80.5, t:59.9,w:17, z:3},
   shoe_l:{img:"assets/a48.png", l:23.3, t:90, w:24, z:3},
   shoe_r:{img:"assets/a49.png", l:79.2, t:91, w:24, z:3},
-  sword: {img:"assets/item_sword.png", l:22, t:14, w:38, z:4, rot:-35}
+  sword: {img:"assets/item_sword.png", l:22, t:14, w:38, z:4, rot:-35},
+  shoe2_l:{img:"assets/item_shoes2.png", l:23.3, t:90, w:24, z:3},
+  shoe2_r:{img:"assets/item_shoes2.png", l:79.2, t:91, w:24, z:3},
+  cape2: {img:"assets/item_cape2.png", l:51, t:62, w:95, z:0},
+  sword2: {img:"assets/item_sword2.png", l:22, t:14, w:38, z:4, rot:-35}
 };
 function renderDressUp(){
   const st = document.getElementById("dressStage");
@@ -550,8 +559,15 @@ function renderDressUp(){
   if(cur.includes("mask")) add("mask", isNew("mask"));
   if(cur.includes("cape")) add("cape", isNew("cape"));
   if(cur.includes("gloves")){ add("glove_l", isNew("gloves")); add("glove_r", false); }
-  if(cur.includes("shoes")){ add("shoe_l", isNew("shoes")); add("shoe_r", false); }
-  if(cur.includes("sword")) add("sword", isNew("sword"));
+  // Shoes: tier 2 replaces tier 1 visually
+  if(cur.includes("shoes2")){ add("shoe2_l", isNew("shoes2")); add("shoe2_r", false); }
+  else if(cur.includes("shoes")){ add("shoe_l", isNew("shoes")); add("shoe_r", false); }
+  // Cape: tier 2 replaces tier 1
+  if(cur.includes("cape2")) add("cape2", isNew("cape2"));
+  else if(cur.includes("cape")) add("cape", isNew("cape"));
+  // Sword: tier 2 replaces tier 1
+  if(cur.includes("sword2")) add("sword2", isNew("sword2"));
+  else if(cur.includes("sword")) add("sword", isNew("sword"));
   renderDressUp._prev = [...cur];
 }
 /* ================= VIDEOS ================= */
@@ -735,8 +751,25 @@ function winBattle(){
   setTimeout(()=>{
     if(!replay){
       if(!S.done.includes(cur.id)){ S.done.push(cur.id); S.coins+=20; }
-      const it=itemById(cur.loot.itemId); it.locked=false;
+      // Tier progression: complete all Tier 1 before Tier 2
+      const tier1Done = TIER1.every(id => S.items.includes(id));
+      let lootId = cur.loot.itemId;
+      // If loot is tier 2 but tier 1 not complete, give next missing tier 1 instead
+      const lootItem = itemById(lootId);
+      if(lootItem && lootItem.tier === 2 && !tier1Done){
+        const missing = TIER1.find(id => !S.items.includes(id));
+        if(missing) lootId = missing;
+      }
+      // If loot already owned, find next uncollected in same tier
+      if(S.items.includes(lootId)){
+        const tier = (itemById(lootId)||{}).tier || 1;
+        const pool = tier === 2 ? TIER2 : TIER1;
+        const next = pool.find(id => !S.items.includes(id));
+        if(next) lootId = next;
+      }
+      const it=itemById(lootId); it.locked=false;
       if(!S.items.includes(it.id)) S.items.push(it.id);
+      cur.loot = {img:it.img, name:it.name, rarity:"rare", rarityLabel:it.rarity.toUpperCase(), itemId:it.id};
       save();
     }
     document.getElementById("lootImg").src=cur.loot.img;
