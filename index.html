@@ -538,8 +538,20 @@ function speakWords(lineEl, words, onDone){
     if(stopped) return;
     if(i>=words.length){ setTimeout(()=>{ clear(); onDone&&onDone(); }, 300); return; }
     spans.forEach(s=>s.classList.remove("speaking"));
-    if(spans[i]) spans[i].classList.add("speaking");
-    playVoice(words[i], ()=>{ i++; setTimeout(next, 70); });
+    // Check for two-word phrase (e.g. "wake up")
+    let phrase=null, step=1;
+    if(i+1<words.length){
+      const two=words[i]+" "+words[i+1].replace(/[.]$/,"");
+      if(VOICE[vkey(two)]){ phrase=two; step=2; }
+    }
+    if(phrase){
+      if(spans[i]) spans[i].classList.add("speaking");
+      if(spans[i+1]) spans[i+1].classList.add("speaking");
+      playVoice(phrase, ()=>{ i+=step; setTimeout(next, 70); });
+    }else{
+      if(spans[i]) spans[i].classList.add("speaking");
+      playVoice(words[i], ()=>{ i++; setTimeout(next, 70); });
+    }
   };
   next();
 }
