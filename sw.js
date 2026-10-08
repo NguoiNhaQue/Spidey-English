@@ -1,11 +1,14 @@
 /* Spidey English PWA service worker — cache app shell for offline use */
-const CACHE = 'spidey-english-v22';
+const CACHE = 'spidey-english-v23';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './icon-192.png',
-  './icon-512.png'
+  './icon-512.png',
+  './assets/three.min.js',
+  './assets/GLTFLoader.js',
+  './assets/spidey_chibi.glb'
 ];
 
 self.addEventListener('install', (e) => {
