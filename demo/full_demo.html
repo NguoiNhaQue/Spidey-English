@@ -40,8 +40,8 @@ const ITEMS=[
   // Glasses on eyes (face at top-center)
   {id:'mask', name:'🕶️ Kính', img:B+'item_mask_t.png', l:50, t:20, w:22, z:4},
   // Cape BEHIND Spidey (z-index 1, below spidey z-index 2)
-  {id:'cape', name:'🦸 Choàng', img:B+'item_cape_t.png', l:50, t:52, w:65, z:1},
-  {id:'cape2', name:'✨ Choàng PS', img:B+'item_cape2_t.png', l:50, t:52, w:65, z:1},
+  {id:'cape', name:'🦸 Choàng', img:B+'item_cape_t.png', l:50, t:42, w:55, z:1},
+  {id:'cape2', name:'✨ Choàng PS', img:B+'item_cape2_t.png', l:50, t:42, w:55, z:1},
   // Gloves on hands
   {id:'gloveR', name:'🧤 Găng P', img:B+'item_gloves_t.png', l:27, t:8, w:12, z:4},
   {id:'gloveL', name:'🧤 Găng T', img:B+'item_gloves_t.png', l:68, t:38, w:12, z:4},
@@ -49,12 +49,11 @@ const ITEMS=[
   {id:'shoeL2', name:'🚀 Giày PL T', img:B+'item_shoes2_t.png', l:33, t:84, w:16, z:3},
   {id:'shoeR2', name:'🚀 Giày PL P', img:B+'item_shoes2_t.png', l:67, t:84, w:16, z:3},
   // Hat on head
-  {id:'hat', name:'🎩 Mũ', img:B+'item_shoes_t.png', l:50, t:8, w:20, z:5},
 ];
 const stage=document.getElementById('stage');
 const controls=document.getElementById('controls');
 // Default: tier 1 full set ON, tier 2 OFF
-const active={shoeL:true,shoeR:true,sword:true,mask:true,cape:true,gloveR:true,gloveL:true,hat:false,
+const active={shoeL:true,shoeR:true,sword:true,mask:true,cape:true,gloveR:true,gloveL:true,
   sword2:false,cape2:false,shoeL2:false,shoeR2:false};
 function render(){
   stage.querySelectorAll('.item').forEach(e=>e.remove());
