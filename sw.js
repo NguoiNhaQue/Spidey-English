@@ -1,5 +1,5 @@
 /* Spidey English PWA service worker — cache app shell for offline use */
-const CACHE = 'spidey-english-v15';
+const CACHE = 'spidey-english-v16';
 const ASSETS = [
   './',
   './index.html',
