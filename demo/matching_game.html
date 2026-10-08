@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nối Từ với Hình - Demo</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    color: white;
+  }
+  h1 { margin-bottom: 5px; font-size: 22px; }
+  .subtitle { opacity: 0.7; margin-bottom: 15px; font-size: 14px; }
+  .score { font-size: 18px; margin-bottom: 15px; color: #FFD700; }
+  .board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    max-width: 500px;
+    width: 100%;
+    margin-bottom: 20px;
+  }
+  .card {
+    aspect-ratio: 1;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 20px;
+    font-weight: bold;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 3px solid transparent;
+    overflow: hidden;
+    position: relative;
+  }
+  .card.pic {
+    background-size: cover;
+    background-position: center;
+  }
+  .card.word {
+    background: #ffffff20;
+    color: white;
+    text-align: center;
+    padding: 10px;
+  }
+  .card:hover { transform: scale(1.05); }
+  .card.selected {
+    border-color: #FFD700;
+    box-shadow: 0 0 15px #FFD700;
+    transform: scale(1.05);
+  }
+  .card.matched {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.8);
+  }
+  .card.wrong {
+    animation: shake 0.4s;
+    border-color: #ff4444;
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+  }
+  .card.correct-flash {
+    border-color: #4CAF50;
+    box-shadow: 0 0 20px #4CAF50;
+  }
+  #message {
+    font-size: 20px;
+    min-height: 30px;
+    margin-bottom: 15px;
+    color: #4CAF50;
+    font-weight: bold;
+  }
+  .btn {
+    padding: 12px 30px;
+    border: none;
+    border-radius: 25px;
+    background: #4CAF50;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .btn:hover { background: #45a049; }
+</style>
+</head>
+<body>
+  <h1>🧩 Nối Từ với Hình</h1>
+  <div class="subtitle">Bấm 1 thẻ hình, rồi bấm 1 thẻ chữ đúng với nó</div>
+  <div class="score">⭐ <span id="score">0</span> / <span id="total">0</span></div>
+  <div id="message"></div>
+  <div class="board" id="board"></div>
+  <button class="btn" onclick="restart()">🔄 Chơi lại</button>
+
+<script>
+  // Sample vocab from Lesson 1 (same structure as app: [word, vietnamese, image])
+  const BASE = 'https://spidey-english-88.vercel.app/';
+  const vocab = [
+    ["morning", "buổi sáng", BASE + "assets/a14.jpg"],
+    ["sun", "mặt trời", BASE + "assets/a15.jpg"],
+    ["bed", "giường", BASE + "assets/a16.jpg"],
+    ["wake up", "thức dậy", BASE + "assets/a11.jpg"],
+    ["brush", "chải", BASE + "assets/a12.jpg"],
+    ["teeth", "răng", BASE + "assets/a13.jpg"],
+  ];
+
+  let selectedPic = null;
+  let selectedWord = null;
+  let matched = 0;
+  let lock = false;
+
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function speak(text) {
+    // Use pre-recorded MP3 if available, fallback to speechSynthesis
+    const audio = new Audio(BASE + 'assets/v_' + text.replace(/ /g, '_') + '.mp3');
+    audio.onerror = () => {
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'en-US';
+      speechSynthesis.speak(u);
+    };
+    audio.play().catch(() => {
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'en-US';
+      speechSynthesis.speak(u);
+    });
+  }
+
+  function build() {
+    const board = document.getElementById('board');
+    board.innerHTML = '';
+    matched = 0;
+    selectedPic = null;
+    selectedWord = null;
+    lock = false;
+    document.getElementById('score').textContent = '0';
+    document.getElementById('total').textContent = vocab.length;
+    document.getElementById('message').textContent = '';
+
+    // Create pic cards and word cards, shuffle together
+    let cards = [];
+    vocab.forEach((v, i) => {
+      cards.push({ type: 'pic', word: v[0], img: v[2], id: 'p' + i });
+      cards.push({ type: 'word', word: v[0], id: 'w' + i });
+    });
+    shuffle(cards);
+
+    cards.forEach(c => {
+      const div = document.createElement('div');
+      div.className = 'card ' + c.type;
+      div.dataset.word = c.word;
+      div.dataset.type = c.type;
+      div.dataset.id = c.id;
+      if (c.type === 'pic') {
+        div.style.backgroundImage = `url('${c.img}')`;
+      } else {
+        div.textContent = c.word;
+      }
+      div.onclick = () => onCardClick(div);
+      board.appendChild(div);
+    });
+  }
+
+  function onCardClick(div) {
+    if (lock || div.classList.contains('matched')) return;
+
+    if (div.dataset.type === 'pic') {
+      if (selectedPic) selectedPic.classList.remove('selected');
+      selectedPic = div;
+      div.classList.add('selected');
+      // Auto-speak the word? No, that gives away the answer. Just select.
+    } else {
+      if (selectedWord) selectedWord.classList.remove('selected');
+      selectedWord = div;
+      div.classList.add('selected');
+    }
+
+    // Check if we have a pair
+    if (selectedPic && selectedWord) {
+      lock = true;
+      if (selectedPic.dataset.word === selectedWord.dataset.word) {
+        // Correct!
+        const word = selectedPic.dataset.word;
+        selectedPic.classList.add('correct-flash');
+        selectedWord.classList.add('correct-flash');
+        setTimeout(() => {
+          selectedPic.classList.add('matched');
+          selectedWord.classList.add('matched');
+          selectedPic.classList.remove('selected', 'correct-flash');
+          selectedWord.classList.remove('selected', 'correct-flash');
+          selectedPic = null;
+          selectedWord = null;
+          lock = false;
+          matched++;
+          document.getElementById('score').textContent = matched;
+          speak(word);
+          if (matched === vocab.length) {
+            document.getElementById('message').textContent = '🎉 Tuyệt vời! Xong hết rồi!';
+            speak('Great job!');
+          }
+        }, 400);
+      } else {
+        // Wrong!
+        selectedPic.classList.add('wrong');
+        selectedWord.classList.add('wrong');
+        setTimeout(() => {
+          selectedPic.classList.remove('selected', 'wrong');
+          selectedWord.classList.remove('selected', 'wrong');
+          selectedPic = null;
+          selectedWord = null;
+          lock = false;
+        }, 500);
+      }
+    }
+  }
+
+  function restart() { build(); }
+  build();
+</script>
+</body>
+</html>
