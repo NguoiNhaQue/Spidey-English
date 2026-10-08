@@ -136,23 +136,20 @@
   .closet-item.locked img { filter: grayscale(1) brightness(.4); }
   /* Beautiful 2D closet */
   .closet-hero {
-    background: linear-gradient(160deg, #2b3a6e 0%, #4a5fa0 45%, #7a8fd0 100%);
+    background: url('assets/apartment_bg.jpg') center/cover no-repeat;
     border: none; position: relative; overflow: hidden;
+    min-height: 480px;
   }
   .closet-hero::before {
-    content: "🕸️"; position: absolute; font-size: 120px; opacity: .08;
-    top: -20px; right: -10px; transform: rotate(-15deg); pointer-events: none;
-  }
-  .closet-hero::after {
-    content: "🕸️"; position: absolute; font-size: 80px; opacity: .06;
-    bottom: 10px; left: -10px; transform: rotate(20deg); pointer-events: none;
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(20,30,70,.25) 0%, rgba(20,30,70,0) 40%, rgba(20,30,70,.35) 100%);
+    pointer-events: none; z-index: 0;
   }
   .closet-hero h4 { color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,.3); position: relative; z-index: 2; }
   .closet-hero .dress-stage {
-    background: radial-gradient(circle at 50% 35%, rgba(255,255,255,.18), rgba(255,255,255,.04) 65%);
-    border-radius: 24px; padding: 12px; position: relative; z-index: 1;
-    border: 2px solid rgba(255,255,255,.25);
-    box-shadow: 0 8px 24px rgba(0,0,0,.25), inset 0 2px 12px rgba(255,255,255,.1);
+    background: transparent;
+    border-radius: 24px; padding: 8px; position: relative; z-index: 1;
+    border: none; box-shadow: none;
   }
   .closet-hero .dress-base {
     filter: drop-shadow(0 10px 20px rgba(0,0,0,.35));
