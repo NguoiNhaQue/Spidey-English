@@ -475,7 +475,7 @@ function initCloset3D(){
   const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
   renderer.setSize(el.clientWidth||300, el.clientHeight||380);
   renderer.setPixelRatio(Math.min(devicePixelRatio,2));
-  el.appendChild(renderer.domElement);
+  // Don't append yet - show loading text first, append canvas after GLB loads
   scene.add(new THREE.AmbientLight(0xffffff, 0.9));
   const key = new THREE.DirectionalLight(0xffffff, 1.2); key.position.set(3,6,4); scene.add(key);
   const rim = new THREE.DirectionalLight(0xaaccff, 0.5); rim.position.set(-4,3,-3); scene.add(rim);
@@ -491,9 +491,9 @@ function initCloset3D(){
   addEventListener("pointerup", ()=>{ dragging=false; });
   // load model
   el.innerHTML = '<div style="color:#fff;padding:140px 20px;text-align:center">⏳ Đang tải mô hình Spidey...</div>';
-  // Note: canvas will be appended after, replacing the loading text
   new THREE.GLTFLoader().load("assets/spidey_chibi.glb", gltf=>{
-    el.innerHTML = ""; // clear loading text
+    el.innerHTML = "";
+    el.appendChild(renderer.domElement); // append canvas NOW, after loading text is cleared
     const m = gltf.scene;
     const box = new THREE.Box3().setFromObject(m);
     const center = box.getCenter(new THREE.Vector3());
