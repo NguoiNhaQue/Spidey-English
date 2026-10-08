@@ -134,6 +134,71 @@
   .closet-item.equipped { border-color: #f4a300; background: #fff8e6; box-shadow: 0 4px 0 #f4a300; }
   .closet-item.locked { opacity: .55; }
   .closet-item.locked img { filter: grayscale(1) brightness(.4); }
+  /* Beautiful 2D closet */
+  .closet-hero {
+    background: linear-gradient(160deg, #2b3a6e 0%, #4a5fa0 45%, #7a8fd0 100%);
+    border: none; position: relative; overflow: hidden;
+  }
+  .closet-hero::before {
+    content: "🕸️"; position: absolute; font-size: 120px; opacity: .08;
+    top: -20px; right: -10px; transform: rotate(-15deg); pointer-events: none;
+  }
+  .closet-hero::after {
+    content: "🕸️"; position: absolute; font-size: 80px; opacity: .06;
+    bottom: 10px; left: -10px; transform: rotate(20deg); pointer-events: none;
+  }
+  .closet-hero h4 { color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,.3); position: relative; z-index: 2; }
+  .closet-hero .dress-stage {
+    background: radial-gradient(circle at 50% 35%, rgba(255,255,255,.18), rgba(255,255,255,.04) 65%);
+    border-radius: 24px; padding: 12px; position: relative; z-index: 1;
+    border: 2px solid rgba(255,255,255,.25);
+    box-shadow: 0 8px 24px rgba(0,0,0,.25), inset 0 2px 12px rgba(255,255,255,.1);
+  }
+  .closet-hero .dress-base {
+    filter: drop-shadow(0 10px 20px rgba(0,0,0,.35));
+  }
+  .closet-hero .equipped-chips { position: relative; z-index: 2; margin: 10px 0 2px; }
+  .closet-hero .equipped-chips span {
+    background: rgba(255,217,59,.92); color: #5a3d00;
+    padding: 5px 14px; border-radius: 999px; font-size: .78rem; font-weight: 800;
+    margin: 2px 4px; display: inline-block; box-shadow: 0 2px 8px rgba(0,0,0,.2);
+  }
+  /* Pop-in animation for newly equipped items */
+  @keyframes popIn {
+    0% { transform: translate(-50%,-50%) scale(0.3); opacity: 0; }
+    60% { transform: translate(-50%,-50%) scale(1.15); opacity: 1; }
+    100% { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+  }
+  .dress-item.pop-in { animation: popIn .45s cubic-bezier(.34,1.56,.64,1); }
+  /* Enhanced item cards */
+  .closet-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+  .closet-item {
+    background: linear-gradient(165deg, #ffffff, #f0f5ff);
+    border: 3px solid #bcd6f5; border-radius: 18px; padding: 10px 6px;
+    text-align: center; cursor: pointer;
+    box-shadow: 0 4px 0 #bcd6f5, 0 6px 16px rgba(30,60,120,.08);
+    transition: transform .15s, box-shadow .15s;
+    position: relative; overflow: hidden;
+  }
+  .closet-item:active { transform: translateY(3px) scale(.97); box-shadow: 0 1px 0 #bcd6f5; }
+  .closet-item img { width: 72px; height: 72px; object-fit: contain; filter: drop-shadow(0 3px 6px rgba(0,0,0,.15)); }
+  .closet-item .nm { font-size: .78rem; font-weight: 800; margin-top: 6px; color: #1c2b4a; }
+  .closet-item .rw { font-size: .65rem; font-weight: 700; margin-top: 2px; }
+  .closet-item .rw.Hiếm { color: #b45fd6; }
+  .closet-item .rw.Thường { color: #5b8dd6; }
+  .closet-item .rw.Đặc { color: #e09b00; }
+  .closet-item.equipped {
+    border-color: #f4a300;
+    background: linear-gradient(165deg, #fffbe8, #fff3c4);
+    box-shadow: 0 4px 0 #f4a300, 0 6px 20px rgba(244,163,0,.3);
+  }
+  .closet-item.equipped::after {
+    content: "✓"; position: absolute; top: 6px; right: 8px;
+    background: #f4a300; color: #fff; width: 22px; height: 22px;
+    border-radius: 50%; font-size: 13px; font-weight: 900;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,.2);
+  }
   /* PARENT */
   .pinpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 260px; margin: 14px auto; }
   .pinpad button { padding: 15px; font-size: 1.25rem; font-weight: 800; border-radius: 16px; border: none; background: #fff; color: #1c2b4a; cursor: pointer; box-shadow: 0 4px 0 #bcd6f5; }
@@ -166,8 +231,7 @@
 .say-en .en-line{flex:1;font-weight:700;color:#1d5fd1;font-size:.92rem;}
 .mini-spk{border:none;background:#e63946;color:#fff;border-radius:50%;width:38px;height:38px;font-size:1.1rem;cursor:pointer;flex-shrink:0;}
 </style>
-<script src="assets/three.min.js"></script>
-<script src="assets/GLTFLoader.js"></script>
+
 </head>
 <body>
 <div class="phone">
@@ -231,12 +295,15 @@
       </div>
     </section>
     <section class="screen" id="s-closet">
-      <div class="card" style="text-align:center">
-        <h4>🕷️ Spidey 3D của bạn</h4>
-        <p style="font-size:.8rem;color:#5b7a99">Kéo để xoay • Chụm để zoom</p>
-        <div id="closet3d" style="width:100%;height:380px;border-radius:16px;overflow:hidden;background:radial-gradient(circle at 50% 30%,#3a5ac8,#1a2a6c);touch-action:none;margin:8px 0"></div>
-        <div class="equipped-chips" id="closetChips" style="margin:8px 0"></div>
-        <h4>🎒 Chạm để mặc / tháo đồ cho Spidey</h4>
+      <div class="card closet-hero">
+        <h4>🕷️ Tủ đồ của Spidey</h4>
+        <div class="dress-stage" id="dressStage">
+          <img class="dress-base" src="assets/a06.png" alt="Spidey">
+        </div>
+        <div class="equipped-chips" id="closetChips"></div>
+      </div>
+      <div class="card">
+        <h4>🎒 Chạm để mặc / tháo đồ</h4>
         <div class="closet-grid" id="closetGrid"></div>
       </div>
     </section>
@@ -448,184 +515,43 @@ function renderCloset(){
     d.innerHTML='<img src="'+it.img+'" alt="'+it.name+'"><div class="nm">'+(owned?it.name:"???")+'</div><div class="rw">'+(owned?it.rarity:"Chưa mở khóa")+'</div>';
     d.onclick=()=>{ if(!owned){ toast("Chơi tiếp để mở khóa món này!"); return; }
       const ix=S.equipped.indexOf(it.id); if(ix>=0)S.equipped.splice(ix,1); else S.equipped.push(it.id);
-      save(); Closet3D.sync(); renderCloset(); };
+      save(); renderCloset(); };
     g.appendChild(d);
   });
 }
-/* ============ 3D CLOSET (robust singleton) ============ */
-const Closet3D = (function(){
-  // State: 'idle' | 'loading' | 'ready' | 'error'
-  let state = 'idle';
-  let renderer = null, scene = null, camera = null, spidey = null;
-  let items = {};
-  let rotY = 0, rotX = 0;
-  let rafId = 0;
-  let container = null;
-  let clock = null;
-
-  function showMsg(html){
-    if(container) container.innerHTML = '<div style="color:#fff;padding:120px 20px;text-align:center;line-height:1.6">'+html+'</div>';
-  }
-
-  function startLoop(){
-    if(rafId || !renderer) return;
-    const loop = function(){
-      rafId = requestAnimationFrame(loop);
-      try{
-        const t = clock.getElapsedTime();
-        if(spidey){
-          spidey.rotation.y = rotY + Math.sin(t*0.6)*0.04;
-          spidey.rotation.x = rotX;
-          spidey.position.y = 1.1 + Math.sin(t*1.8)*0.035;
-        }
-        renderer.render(scene, camera);
-      }catch(e){ /* ignore frame errors */ }
-    };
-    clock = new THREE.Clock();
-    loop();
-  }
-
-  function stopLoop(){
-    if(rafId){ cancelAnimationFrame(rafId); rafId = 0; }
-  }
-
-  function buildItems(){
-    // Hat
-    const hat = new THREE.Group();
-    const cone = new THREE.Mesh(new THREE.ConeGeometry(0.2,0.42,20),
-      new THREE.MeshStandardMaterial({color:0xffd93b,roughness:.4}));
-    cone.position.y = 0.21; hat.add(cone);
-    const pom = new THREE.Mesh(new THREE.SphereGeometry(0.06,12,12),
-      new THREE.MeshStandardMaterial({color:0xff6b6b}));
-    pom.position.y = 0.44; hat.add(pom);
-    hat.position.set(0.06,1.18,0); hat.rotation.z = -0.18; hat.visible = false;
-    spidey.add(hat); items.hat = hat;
-    // Glasses
-    const gg = new THREE.Group();
-    const gm = new THREE.MeshStandardMaterial({color:0xffd93b,roughness:.3,metalness:.4});
-    [-1,1].forEach(function(sg){
-      const lens = new THREE.Mesh(new THREE.TorusGeometry(0.1,0.028,10,20), gm);
-      lens.position.x = 0.17*sg; gg.add(lens);
-    });
-    const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.08,0.03,0.03), gm);
-    gg.add(bridge);
-    gg.position.set(0,0.72,0.42); gg.visible = false;
-    spidey.add(gg); items.glasses = gg;
-    // Cape
-    const shape = new THREE.Shape();
-    shape.moveTo(-0.38,0); shape.quadraticCurveTo(0,-1.2,0.38,0); shape.lineTo(-0.38,0);
-    const cape = new THREE.Mesh(new THREE.ShapeGeometry(shape),
-      new THREE.MeshStandardMaterial({color:0x8b1a1a,side:THREE.DoubleSide,roughness:.7}));
-    cape.position.set(0,0.45,-0.3); cape.visible = false;
-    spidey.add(cape); items.cape = cape;
-  }
-
-  function attachDrag(cv){
-    let dragging = false, px = 0, py = 0;
-    cv.style.touchAction = 'none';
-    cv.addEventListener('pointerdown', function(e){
-      dragging = true; px = e.clientX; py = e.clientY;
-      try{ cv.setPointerCapture(e.pointerId); }catch(_){}
-    });
-    cv.addEventListener('pointermove', function(e){
-      if(!dragging || !spidey) return;
-      rotY += (e.clientX-px)*0.012;
-      rotX += (e.clientY-py)*0.006;
-      rotX = Math.max(-0.6, Math.min(0.6, rotX));
-      px = e.clientX; py = e.clientY;
-    });
-    const stop = function(){ dragging = false; };
-    cv.addEventListener('pointerup', stop);
-    cv.addEventListener('pointercancel', stop);
-  }
-
-  function init(){
-    container = document.getElementById('closet3d');
-    if(!container) return;
-    // Singleton: if already loading/ready, just sync and ensure loop runs
-    if(state === 'loading' || state === 'ready'){
-      syncItems();
-      startLoop();
-      return;
-    }
-    if(state === 'error') return; // don't retry automatically
-    state = 'loading';
-
-    // Three.js must be loaded via <script> tags (local files, no CDN race)
-    if(typeof THREE === 'undefined' || !THREE.GLTFLoader){
-      state = 'error';
-      showMsg('❌ Không tải được thư viện 3D.');
-      return;
-    }
-
-    try{
-      showMsg('⏳ Đang tải Spidey 3D...');
-      scene = new THREE.Scene();
-      const w = container.clientWidth || 300, h = container.clientHeight || 380;
-      camera = new THREE.PerspectiveCamera(40, w/h, 0.1, 100);
-      camera.position.set(0, 1.2, 4.5);
-      camera.lookAt(0, 0.8, 0);
-      renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
-      renderer.setSize(w, h);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2));
-      scene.add(new THREE.AmbientLight(0xffffff, 0.9));
-      const key = new THREE.DirectionalLight(0xffffff, 1.2);
-      key.position.set(3,6,4); scene.add(key);
-      const rim = new THREE.DirectionalLight(0xaaccff, 0.5);
-      rim.position.set(-4,3,-3); scene.add(rim);
-    }catch(e){
-      state = 'error';
-      showMsg('❌ Lỗi khởi tạo 3D.');
-      return;
-    }
-
-    new THREE.GLTFLoader().load('assets/spidey_chibi.glb', function(gltf){
-      try{
-        const m = gltf.scene;
-        const box = new THREE.Box3().setFromObject(m);
-        const center = box.getCenter(new THREE.Vector3());
-        const size = box.getSize(new THREE.Vector3());
-        const sc = 2.2 / (size.y || 1);
-        m.scale.set(sc, sc, sc);
-        m.position.sub(center.multiplyScalar(sc));
-        m.position.y += 1.1;
-        scene.add(m);
-        spidey = m;
-        buildItems();
-        // Clear loading text and attach canvas
-        container.innerHTML = '';
-        const cv = renderer.domElement;
-        container.appendChild(cv);
-        attachDrag(cv);
-        state = 'ready';
-        syncItems();
-        startLoop();
-      }catch(e){
-        state = 'error';
-        showMsg('❌ Lỗi hiển thị mô hình.');
-      }
-    }, undefined, function(err){
-      state = 'error';
-      showMsg('❌ Không tải được mô hình Spidey.');
-    });
-  }
-
-  function syncItems(){
-    if(state !== 'ready') return;
-    const eq = (typeof S !== 'undefined' && S.equipped) || [];
-    if(items.hat) items.hat.visible = eq.indexOf('hat') >= 0;
-    if(items.glasses) items.glasses.visible = eq.indexOf('mask') >= 0;
-    if(items.cape) items.cape.visible = eq.indexOf('cape') >= 0;
-  }
-
-  function onHide(){
-    stopLoop();
-  }
-
-  return { init: init, sync: syncItems, onHide: onHide };
-})();
-
-function renderDressUp(){ Closet3D.init(); }
+/* ============ 2D CLOSET (beautiful) ============ */
+const DRESS_POS = {
+  hat:   {img:"assets/a44.png", l:50,   t:2,  w:44, z:3},
+  mask:  {img:"assets/a44.png", l:55.5, t:26, w:39, z:3},
+  cape:  {img:"assets/a45.png", l:51,   t:62, w:95, z:0},
+  glove_l:{img:"assets/a46.png",l:19.6, t:12.7,w:17, z:3},
+  glove_r:{img:"assets/a47.png",l:80.5, t:59.9,w:17, z:3},
+  shoe_l:{img:"assets/a48.png", l:23.3, t:90, w:24, z:3},
+  shoe_r:{img:"assets/a49.png", l:79.2, t:91, w:24, z:3}
+};
+function renderDressUp(){
+  const st = document.getElementById("dressStage");
+  if(!st) return;
+  st.querySelectorAll(".dress-item").forEach(e=>e.remove());
+  const add = (k, pop) => {
+    const p = DRESS_POS[k];
+    const im = document.createElement("img");
+    im.className = "dress-item" + (pop ? " pop-in" : "");
+    im.src = p.img;
+    im.style.cssText = "left:"+p.l+"%;top:"+p.t+"%;width:"+p.w+"%;z-index:"+p.z;
+    st.appendChild(im);
+  };
+  // Track newly equipped for pop animation
+  const prev = renderDressUp._prev || [];
+  const cur = S.equipped || [];
+  const isNew = (id) => cur.includes(id) && !prev.includes(id);
+  if(cur.includes("hat")) add("hat", isNew("hat"));
+  if(cur.includes("mask")) add("mask", isNew("mask"));
+  if(cur.includes("cape")) add("cape", isNew("cape"));
+  if(cur.includes("gloves")){ add("glove_l", isNew("gloves")); add("glove_r", false); }
+  if(cur.includes("shoes")){ add("shoe_l", isNew("shoes")); add("shoe_r", false); }
+  renderDressUp._prev = [...cur];
+}
 /* ================= VIDEOS ================= */
 function renderVideos(){
   document.getElementById("videoList").innerHTML = LESSONS.slice(0,4).map((L,i)=>{
