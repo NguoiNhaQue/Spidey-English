@@ -826,47 +826,43 @@ function startHomeSilentLoop(){ var v=homeVidEl(); if(!v||v.loop&&v.src.includes
 function initHomeVideo(){ var v=homeVidEl(); if(!v||v.dataset.init) return; v.dataset.init="1"; v.addEventListener("ended",function(){ if(!v.loop) startHomeSilentLoop(); }); v.muted=false; v.play().then(function(){}).catch(function(){ v.muted=true; v.play().catch(function(){}); var unmuteOnce=function(){ v.muted=false; v.currentTime=0; if(!v.src.includes("home_greet.mp4")) v.src="assets/home_greet_v16.mp4"; v.play().catch(function(){}); }; ["pointerdown","keydown","touchend"].forEach(function(ev){ document.addEventListener(ev,unmuteOnce,{once:true}); }); }); }
 function renderMap(){
   const wrap=document.getElementById("mapwrap");
-  // Clear and rebuild all 60 lesson nodes grouped by chapter
   wrap.innerHTML="";
   const chapters=[
     "Ch.1 Phòng Tắm 🛁","Ch.2 Quần Áo 👕","Ch.3 Nhà Bếp 🍳","Ch.4 Gia Đình 👨‍👩‍👧",
     "Ch.5 Cơ Thể 🖐️","Ch.6 Màu & Hình 🎨","Ch.7 Thú Cưng 🐱","Ch.8 Đồ Chơi 🧸",
     "Ch.9 Số Đếm 🔢","Ch.10 Thời Tiết 🌤️","Ch.11 Trang Trại 🐄","Ch.12 Tổng Ôn 🏆"
   ];
-  LESSONS.forEach((L,idx)=>{
+  // Track current row per chapter
+  const rows={};
+  for(let idx=0; idx<LESSONS.length; idx++){
+    const L=LESSONS[idx];
     const i=idx+1;
     const chapIdx=Math.floor(idx/5);
-    // Add chapter header before first lesson of each chapter
     if(idx%5===0){
       const h=document.createElement("div");
       h.className="mchap";
       h.textContent=chapters[chapIdx]||("Chương "+(chapIdx+1));
       wrap.appendChild(h);
-    }
-    // Create row container for positioning
-    let row=wrap.querySelector('.mrow[data-chap="'+chapIdx+'"]');
-    if(!row || row.children.length>=5){
-      row=document.createElement("div");
+      const row=document.createElement("div");
       row.className="mrow";
-      row.dataset.chap=chapIdx;
       wrap.appendChild(row);
+      rows[chapIdx]=row;
     }
+    const row=rows[chapIdx];
     const done=S.done.includes(L.id);
     const open=i===1 || S.done.includes(LESSONS[i-2].id);
     const nd=document.createElement("div");
-    // Position 5 nodes across the row
     const posInChap=idx%5;
     nd.style.left=(10+posInChap*20)+"%";
     nd.style.top="50%";
     nd.className="mnode"+(L.boss?" boss":"");
     nd.dataset.n=i;
     const lbl='<span class="mlbl">'+(L.boss?"BOSS 👑":"Bài "+L.id)+'</span>';
-    nd.classList.remove("done","open","lock");
     if(done){ nd.classList.add("done"); nd.innerHTML="✅"+lbl; nd.onclick=()=>{ toast("Chơi lại để ôn tập nhé!"); startLesson(L.id,true); }; }
     else if(open){ nd.classList.add("open"); nd.innerHTML=(L.boss?"👑":L.id)+lbl; nd.onclick=()=>startLesson(L.id,false); }
     else { nd.classList.add("lock"); nd.innerHTML="🔒"+lbl; nd.onclick=()=>toast("Hoàn thành bài trước để mở khóa!"); }
     row.appendChild(nd);
-  });
+  }
 }
 /* ================= CLOSET ================= */
 function renderCloset(){
