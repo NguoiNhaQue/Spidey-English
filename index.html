@@ -654,6 +654,17 @@ function showAddProfileDialog(){
   renderProfiles();
   toast("Đã thêm "+name.trim()+"!");
 }
+function renameProfile(id){
+  const profiles = getProfiles();
+  const p = profiles.find(x=>x.id===id);
+  if(!p) return;
+  const newName = prompt("Tên mới cho bé:", p.name);
+  if(!newName || !newName.trim() || newName.trim()===p.name) return;
+  p.name = newName.trim().slice(0,20);
+  saveProfiles(profiles);
+  renderProfiles();
+  toast("Đã đổi tên thành "+p.name+"!");
+}
 function renderParentProfiles(){
   const wrap = document.getElementById("parentProfileList");
   if(!wrap) return;
@@ -665,6 +676,11 @@ function renderParentProfiles(){
     d.style.cssText = "display:flex;align-items:center;gap:10px;padding:10px;background:#f5f8ff;border-radius:12px;margin-bottom:8px;";
     d.innerHTML = '<div style="font-size:1.8rem;">'+(p.avatar||"\u{1F9B8}")+'</div>'+
       '<div style="flex:1;"><div style="font-weight:800;">'+escapeHtml(p.name)+(p.id===cur?' <span style="font-size:.7rem;color:#1f9d44;">(đang chơi)</span>':"")+'</div></div>';
+    const renameBtn = document.createElement("button");
+    renameBtn.textContent = "✏️ Đổi tên";
+    renameBtn.style.cssText = "padding:6px 12px;border-radius:10px;border:1px solid #1c2b4a;background:#fff;color:#1c2b4a;cursor:pointer;font-size:.8rem;";
+    renameBtn.onclick = ()=>renameProfile(p.id);
+    d.appendChild(renameBtn);
     if(profiles.length>1){
       const delBtn = document.createElement("button");
       delBtn.textContent = "🗑️ Xóa";
