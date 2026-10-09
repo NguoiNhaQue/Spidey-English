@@ -66,6 +66,9 @@
   .mnode.open { border-color: #ff6b6b; animation: pulse 1.6s infinite; }
   .mnode.lock { opacity: .75; font-size: 1.1rem; }
   .mnode.boss { width: 64px; height: 64px; font-size: 1.7rem; border-color: #f4a300; }
+  #mapwrap { overflow-y: auto !important; }
+  .mchap { position: relative; margin: 12px 8px 6px; padding: 6px 12px; background: rgba(28,43,74,.85); color: #fff; border-radius: 12px; font-weight: 800; font-size: .85rem; text-align: center; }
+  .mrow { position: relative; height: 90px; margin: 4px 8px; }
   @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(255,107,107,.55); } 50% { box-shadow: 0 0 0 10px rgba(255,107,107,0); } }
   .zonelock { position: absolute; transform: translate(-50%,-50%); background: #ffffffee; border-radius: 14px; padding: 6px 10px; font-size: .72rem; font-weight: 800; color: #8aa0b8; box-shadow: 0 3px 8px rgba(0,0,0,.2); text-align: center; }
   .maplegend { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
@@ -206,11 +209,7 @@
     </section>
     <section class="screen" id="s-map">
       <div class="mapwrap" id="mapwrap" style="background-image:url('assets/a03.webp')">
-        <div class="mnode" data-n="1" style="left:15%;top:13%"><span class="mlbl">Bài 1</span></div>
-        <div class="mnode" data-n="2" style="left:31%;top:21%"><span class="mlbl">Bài 2</span></div>
-        <div class="mnode" data-n="3" style="left:14%;top:31%"><span class="mlbl">Bài 3</span></div>
-        <div class="mnode" data-n="4" style="left:30%;top:40%"><span class="mlbl">Bài 4</span></div>
-        <div class="mnode boss" data-n="5" style="left:21%;top:52%"><span class="mlbl">BOSS 👑</span></div>
+        <!-- Map nodes generated dynamically by JS for all 60 lessons -->
         <div class="zonelock" style="left:72%;top:22%">🔒 Nhà Bếp<br><small>sắp ra mắt</small></div>
         <div class="zonelock" style="left:24%;top:72%">🔒 Phòng Khách<br><small>sắp ra mắt</small></div>
         <div class="zonelock" style="left:73%;top:73%">🔒 Phòng Ngủ<br><small>sắp ra mắt</small></div>
@@ -826,15 +825,47 @@ function playHomeGreet(){ var v=homeVidEl(); if(!v) return; v.loop=false; v.mute
 function startHomeSilentLoop(){ var v=homeVidEl(); if(!v||v.loop&&v.src.includes("a01.mp4")) return; v.loop=true; v.muted=true; v.src="assets/a01.mp4"; v.currentTime=0; v.play().catch(function(){}); }
 function initHomeVideo(){ var v=homeVidEl(); if(!v||v.dataset.init) return; v.dataset.init="1"; v.addEventListener("ended",function(){ if(!v.loop) startHomeSilentLoop(); }); v.muted=false; v.play().then(function(){}).catch(function(){ v.muted=true; v.play().catch(function(){}); var unmuteOnce=function(){ v.muted=false; v.currentTime=0; if(!v.src.includes("home_greet.mp4")) v.src="assets/home_greet_v16.mp4"; v.play().catch(function(){}); }; ["pointerdown","keydown","touchend"].forEach(function(ev){ document.addEventListener(ev,unmuteOnce,{once:true}); }); }); }
 function renderMap(){
-  document.querySelectorAll("#mapwrap .mnode").forEach(nd=>{
-    const i=parseInt(nd.dataset.n), L=LESSONS[i-1];
+  const wrap=document.getElementById("mapwrap");
+  // Clear and rebuild all 60 lesson nodes grouped by chapter
+  wrap.innerHTML="";
+  const chapters=[
+    "Ch.1 Phòng Tắm 🛁","Ch.2 Quần Áo 👕","Ch.3 Nhà Bếp 🍳","Ch.4 Gia Đình 👨‍👩‍👧",
+    "Ch.5 Cơ Thể 🖐️","Ch.6 Màu & Hình 🎨","Ch.7 Thú Cưng 🐱","Ch.8 Đồ Chơi 🧸",
+    "Ch.9 Số Đếm 🔢","Ch.10 Thời Tiết 🌤️","Ch.11 Trang Trại 🐄","Ch.12 Tổng Ôn 🏆"
+  ];
+  LESSONS.forEach((L,idx)=>{
+    const i=idx+1;
+    const chapIdx=Math.floor(idx/5);
+    // Add chapter header before first lesson of each chapter
+    if(idx%5===0){
+      const h=document.createElement("div");
+      h.className="mchap";
+      h.textContent=chapters[chapIdx]||("Chương "+(chapIdx+1));
+      wrap.appendChild(h);
+    }
+    // Create row container for positioning
+    let row=wrap.querySelector('.mrow[data-chap="'+chapIdx+'"]');
+    if(!row || row.children.length>=5){
+      row=document.createElement("div");
+      row.className="mrow";
+      row.dataset.chap=chapIdx;
+      wrap.appendChild(row);
+    }
     const done=S.done.includes(L.id);
     const open=i===1 || S.done.includes(LESSONS[i-2].id);
+    const nd=document.createElement("div");
+    // Position 5 nodes across the row
+    const posInChap=idx%5;
+    nd.style.left=(10+posInChap*20)+"%";
+    nd.style.top="50%";
+    nd.className="mnode"+(L.boss?" boss":"");
+    nd.dataset.n=i;
+    const lbl='<span class="mlbl">'+(L.boss?"BOSS 👑":"Bài "+L.id)+'</span>';
     nd.classList.remove("done","open","lock");
-    const lbl=nd.querySelector(".mlbl").outerHTML;
     if(done){ nd.classList.add("done"); nd.innerHTML="✅"+lbl; nd.onclick=()=>{ toast("Chơi lại để ôn tập nhé!"); startLesson(L.id,true); }; }
-    else if(open){ nd.classList.add("open"); nd.innerHTML=(L.boss?"👑":i)+lbl; nd.onclick=()=>startLesson(L.id,false); }
+    else if(open){ nd.classList.add("open"); nd.innerHTML=(L.boss?"👑":L.id)+lbl; nd.onclick=()=>startLesson(L.id,false); }
     else { nd.classList.add("lock"); nd.innerHTML="🔒"+lbl; nd.onclick=()=>toast("Hoàn thành bài trước để mở khóa!"); }
+    row.appendChild(nd);
   });
 }
 /* ================= CLOSET ================= */
