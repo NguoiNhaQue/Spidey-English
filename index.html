@@ -1103,20 +1103,9 @@ function speakWords(lineEl, words, onDone){
     if(stopped) return;
     if(i>=words.length){ setTimeout(()=>{ clear(); onDone&&onDone(); }, 300); return; }
     spans.forEach(s=>s.classList.remove("speaking"));
-    // Check for two-word phrase (e.g. "wake up")
-    let phrase=null, step=1;
-    if(i+1<words.length){
-      const two=words[i]+" "+words[i+1].replace(/[.]$/,"");
-      if(VOICE[vkey(two)]){ phrase=two; step=2; }
-    }
-    if(phrase){
-      if(spans[i]) spans[i].classList.add("speaking");
-      if(spans[i+1]) spans[i+1].classList.add("speaking");
-      playVoice(phrase, ()=>{ i+=step; setTimeout(next, 70); });
-    }else{
-      if(spans[i]) spans[i].classList.add("speaking");
-      playVoice(words[i], ()=>{ i++; setTimeout(next, 70); });
-    }
+    // Read each word individually, one at a time (user requirement 2026-10-09)
+    if(spans[i]) spans[i].classList.add("speaking");
+    playVoice(words[i], ()=>{ i++; setTimeout(next, 70); });
   };
   next();
 }
@@ -1142,11 +1131,13 @@ function readPyramid(){
 let gameRounds=[], gameIdx=0;
 function buildRounds(){
   const rs=[], vs=[...cur.vocab];
+  // Map English word -> image for quick lookup
+  const vocabImg={}; cur.vocab.forEach(v=>{ vocabImg[v[0].toLowerCase()]=v[2]; });
   if(cur.game.type==="tap"){
     vs.sort(()=>Math.random()-.5).forEach(v=>{
       const others=cur.vocab.filter(x=>x[0]!==v[0]).sort(()=>Math.random()-.5).slice(0,2).map(x=>x[0]);
       const opts=[v[0],...others].sort(()=>Math.random()-.5);
-      rs.push({type:"tap",en:"Touch the "+v[0]+"!",vi:'Chạm vào "'+v[1]+'" nhé!',options:opts,answer:opts.indexOf(v[0])});
+      rs.push({type:"tap",target:v[0],targetVi:v[1],options:opts,answer:opts.indexOf(v[0]),vocabImg:vocabImg});
     });
   }else{
     (function(){ const pool=cur.pyramid.filter(l=>l.trim().split(/\s+/).length>=2); return (pool.length?pool:cur.pyramid); })().sort(()=>Math.random()-.5).slice(0,3).forEach(line=>{
@@ -1160,13 +1151,21 @@ function startGame(B,onWin){ gameRounds=buildRounds(); gameIdx=0; window._gameWi
 function renderGameRound(B){
   B=B||document.getElementById("lessonBody");
   const g=gameRounds[gameIdx]; window._g=g; built=[];
-  let inner='<div class="card" style="text-align:center"><h4>🎮 Mini-game — Câu '+(gameIdx+1)+'/'+gameRounds.length+'</h4>'
-    +'<div class="scene" style="margin-bottom:10px"><img src="'+cur.img+'" alt=""></div>'
-    +'<div class="game-en">"'+g.en+'" <button class="btn ghost" style="padding:2px 10px;margin-left:6px" onclick="replayQ()">🔊</button></div><div class="game-vi">'+g.vi+'</div>';
+  let inner='<div class="card" style="text-align:center"><h4>🎮 Mini-game — Câu '+(gameIdx+1)+'/'+gameRounds.length+'</h4>';
   if(g.type==="tap"){
-    inner+='<div class="word-opts">'+g.options.map((o,i)=>'<button class="word-opt" onclick="tapAnswer(this,'+i+','+g.answer+')">'+o+'</button>').join("")+'</div></div>';
+    // User requirement 2026-10-09: no "Touch the..." text, just play target word audio
+    // Show images as options for 5-year-old
+    inner+='<div style="margin:10px 0;"><button class="btn" style="font-size:1.5rem;padding:12px 24px;" onclick="replayQ()">🔊 Nghe lại</button></div>';
+    inner+='<div class="word-opts" style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">'+g.options.map((o,i)=>{
+      const img=(g.vocabImg&&g.vocabImg[o.toLowerCase()])||"";
+      return '<button class="word-opt" style="padding:8px;" onclick="tapAnswer(this,'+i+','+g.answer+',\''+o.replace(/'/g,"\\'")+'\')">'+
+        (img?'<img src="'+img+'" alt="'+o+'" style="width:90px;height:90px;object-fit:cover;border-radius:12px;display:block;margin-bottom:6px;">':"")+
+        '<div style="font-weight:700;">'+o+'</div></button>';
+    }).join("")+'</div></div>';
     B.innerHTML=inner;
   }else{
+    inner+='<div class="scene" style="margin-bottom:10px"><img src="'+cur.img+'" alt=""></div>'
+      +'<div class="game-en">"'+g.en+'" <button class="btn ghost" style="padding:2px 10px;margin-left:6px" onclick="replayQ()">🔊</button></div><div class="game-vi">'+g.vi+'</div>';
     const words=[...g.words].sort(()=>Math.random()-.5);
     inner+='<div class="sentence-out" id="sentOut"><span style="color:#8aa0b8">...</span></div>'
       +'<div class="word-bank">'+words.map(w=>'<button onclick="pickWord(this,\''+w+'\')">'+w+'</button>').join("")+'</div>'
@@ -1174,12 +1173,21 @@ function renderGameRound(B){
     B.innerHTML=inner;
   }
   window._win=()=>{ gameIdx++; if(gameIdx>=gameRounds.length){ const f=window._gameWin; window._gameWin=null; f&&f(); } else renderGameRound(); };
-  speak(g.en,0.85);
+  // User requirement 2026-10-09: play only the target word, not "Touch the..."
+  if(g.type==="tap" && g.target){ speak(g.target, 0.95); }
+  else { speak(g.en, 0.85); }
 }
-function replayQ(){ const g=window._g; if(g) speak(g.en,0.85); }
-function tapAnswer(el, i, answer){
-  if(i===answer){ el.classList.add("right"); speak("Great job!", 1); confetti(); setTimeout(()=>{ const w=window._win; window._win=null; w&&w(); },1000); }
-  else { el.classList.add("wrong"); speak("Try again!", 0.9); setTimeout(()=>el.classList.remove("wrong"),600); }
+function replayQ(){
+  const g=window._g; if(!g) return;
+  // User requirement 2026-10-09: replay only the target word once
+  if(g.type==="tap" && g.target){ speak(g.target, 0.95); }
+  else { speak(g.en, 0.85); }
+}
+function tapAnswer(el, i, answer, word){
+  // Play the tapped word audio for feedback
+  if(word){ speak(word, 0.95); }
+  if(i===answer){ el.classList.add("right"); setTimeout(()=>speak("Great job!", 1), 400); confetti(); setTimeout(()=>{ const w=window._win; window._win=null; w&&w(); },1400); }
+  else { el.classList.add("wrong"); setTimeout(()=>speak("Try again!", 0.9), 400); setTimeout(()=>el.classList.remove("wrong"),600); }
 }
 function pickWord(btn, w){
   btn.classList.add("used"); btn.disabled=true; built.push(w);
