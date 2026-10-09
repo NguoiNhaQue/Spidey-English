@@ -195,7 +195,16 @@
     <div class="coins">🕸️ <span id="coinCount">0</span></div>
   </div>
   <main id="main">
-    <section class="screen active" id="s-home">
+    <section class="screen active" id="s-profile">
+      <div style="text-align:center;padding:32px 16px;">
+        <div style="font-size:3rem;">🕷️</div>
+        <h2 style="color:#1c2b4a;margin:12px 0 4px;">Ai đang chơi?</h2>
+        <p style="color:#5a6b8a;margin:0 0 20px;">Chọn tên bé để bắt đầu học nhé!</p>
+        <div id="profileList" style="display:flex;flex-direction:column;gap:12px;max-width:320px;margin:0 auto;"></div>
+        <button onclick="askParentPinForNewProfile()" style="margin-top:20px;padding:12px 24px;border-radius:16px;border:2px dashed #bcd6f5;background:#fff;color:#1c2b4a;font-weight:800;cursor:pointer;">➕ Thêm bé mới</button>
+      </div>
+    </section>
+    <section class="screen" id="s-home">
       <div class="diorama home-movie">
         <video id="homeVid" playsinline preload="auto" style="width:100%;display:block;aspect-ratio:16/10;object-fit:cover;background:#000"><source src="assets/home_greet_v16.mp4" type="video/mp4"></video>
         <div class="leo-badge">🕷️ LEO</div>
@@ -265,6 +274,10 @@
         </div>
       </div>
       <div id="parentStats" style="display:none">
+        <div class="card"><h4>👨‍👩‍👧 Hồ sơ các bé</h4><div id="parentProfileList"></div>
+          <button class="btn" style="margin-top:8px;" onclick="showAddProfileDialog()">➕ Thêm bé mới</button>
+          <button class="btn ghost" style="margin-top:8px;" onclick="logoutToProfiles()">🔄 Đổi bé đang chơi</button>
+        </div>
         <div class="card"><h4>📊 Tiến độ của bé</h4><div id="statsBody"></div></div>
         <div class="card"><h4>⏱️ Cài đặt</h4>
           <div class="stat"><span>Giới hạn mỗi ngày</span><b>15 phút</b></div>
@@ -556,10 +569,124 @@ const SETS = [
   {id:"champion", img:"demo/assets_sets/set_champion.png", name:"Bộ vô địch vàng", desc:"Boss cuối 🏆", locked:true}
 ];
 /* ================= STATE ================= */
-let S = JSON.parse(localStorage.getItem("spidey_proto2") || '{"done":[],"coins":0,"sets":["base"],"activeSet":"base"}');
-// Migrate old state (items/equipped) to new (sets/activeSet)
-if(!S.sets){ S.sets=["base"]; S.activeSet="base"; save(); }
-function save(){ localStorage.setItem("spidey_proto2", JSON.stringify(S)); }
+/* ================= PROFILES (multi-kid, local only) ================= */
+const DEFAULT_STATE = '{"done":[],"coins":0,"sets":["base"],"activeSet":"base"}';
+function getProfiles(){
+  try { return JSON.parse(localStorage.getItem("spidey_profiles") || "[]"); }
+  catch(e){ return []; }
+}
+function saveProfiles(p){ localStorage.setItem("spidey_profiles", JSON.stringify(p)); }
+function getCurrentProfileId(){ return localStorage.getItem("spidey_current_profile") || null; }
+function setCurrentProfileId(id){ localStorage.setItem("spidey_current_profile", id); }
+function getCurrentProfile(){
+  const pid = getCurrentProfileId();
+  return getProfiles().find(p=>p.id===pid) || null;
+}
+// Migrate old single-profile data on first run
+(function migrateProfile(){
+  const profiles = getProfiles();
+  if(profiles.length===0){
+    const old = localStorage.getItem("spidey_proto2");
+    const id = "p"+Date.now();
+    saveProfiles([{id:id, name:"B\u00e9", avatar:"\u{1F9B8}", created:Date.now()}]);
+    setCurrentProfileId(id);
+    let stateData = DEFAULT_STATE;
+    if(old){
+      try {
+        const o = JSON.parse(old);
+        if(!o.sets){ o.sets=["base"]; o.activeSet="base"; }
+        stateData = JSON.stringify(o);
+      } catch(e){}
+    }
+    localStorage.setItem("spidey_state_"+id, stateData);
+  }
+})();
+let S = JSON.parse(localStorage.getItem("spidey_state_"+getCurrentProfileId()) || DEFAULT_STATE);
+function save(){
+  const pid = getCurrentProfileId();
+  if(pid) localStorage.setItem("spidey_state_"+pid, JSON.stringify(S));
+}
+function switchProfile(id){
+  setCurrentProfileId(id);
+  S = JSON.parse(localStorage.getItem("spidey_state_"+id) || DEFAULT_STATE);
+  renderHome(); renderMap(); renderCloset();
+  show("s-home");
+}
+/* Profile selection UI */
+const AVATARS = ["\u{1F9B8}","\u{1F467}","\u{1F466}","\u{1F9D1}\u200D\u{1F680}","\u{1F9D1}\u200D\u{1F3A8}","\u{1F431}","\u{1F43C}","\u{1F984}"];
+function renderProfiles(){
+  const list = document.getElementById("profileList");
+  if(!list) return;
+  const profiles = getProfiles();
+  list.innerHTML = "";
+  profiles.forEach(p=>{
+    const st = JSON.parse(localStorage.getItem("spidey_state_"+p.id) || DEFAULT_STATE);
+    const doneCount = (st.done||[]).length;
+    const d = document.createElement("div");
+    d.style.cssText = "display:flex;align-items:center;gap:12px;padding:14px 16px;background:#fff;border:3px solid #bcd6f5;border-radius:18px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.08);";
+    d.innerHTML = '<div style="font-size:2.2rem;">'+(p.avatar||"\u{1F9B8}")+'</div>'+
+      '<div style="flex:1;text-align:left;"><div style="font-weight:800;color:#1c2b4a;font-size:1.05rem;">'+escapeHtml(p.name)+'</div>'+
+      '<div style="font-size:.8rem;color:#5a6b8a;">'+doneCount+' bài đã xong ⭐ '+ (st.coins||0) +' xu</div></div>'+
+      '<div style="font-size:1.4rem;color:#bcd6f5;">▶</div>';
+    d.onclick = ()=>switchProfile(p.id);
+    list.appendChild(d);
+  });
+  // Also refresh parent profile management list
+  renderParentProfiles();
+}
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function askParentPinForNewProfile(){
+  const pin = prompt("Bố mẹ nhập PIN để thêm bé mới (mặc định 1234):");
+  if(pin==="1234"){ showAddProfileDialog(); }
+  else if(pin!==null){ toast("Sai PIN rồi!"); }
+}
+function showAddProfileDialog(){
+  const name = prompt("Tên của bé:");
+  if(!name || !name.trim()) return;
+  const avatarChoices = AVATARS.join(" ");
+  let avatar = prompt("Chọn hình đại diện (copy 1 icon):\n"+avatarChoices, AVATARS[0]);
+  if(!AVATARS.includes(avatar)) avatar = AVATARS[0];
+  const profiles = getProfiles();
+  const id = "p"+Date.now();
+  profiles.push({id:id, name:name.trim().slice(0,20), avatar:avatar, created:Date.now()});
+  saveProfiles(profiles);
+  localStorage.setItem("spidey_state_"+id, DEFAULT_STATE);
+  renderProfiles();
+  toast("Đã thêm "+name.trim()+"!");
+}
+function renderParentProfiles(){
+  const wrap = document.getElementById("parentProfileList");
+  if(!wrap) return;
+  const profiles = getProfiles();
+  const cur = getCurrentProfileId();
+  wrap.innerHTML = "";
+  profiles.forEach(p=>{
+    const d = document.createElement("div");
+    d.style.cssText = "display:flex;align-items:center;gap:10px;padding:10px;background:#f5f8ff;border-radius:12px;margin-bottom:8px;";
+    d.innerHTML = '<div style="font-size:1.8rem;">'+(p.avatar||"\u{1F9B8}")+'</div>'+
+      '<div style="flex:1;"><div style="font-weight:800;">'+escapeHtml(p.name)+(p.id===cur?' <span style="font-size:.7rem;color:#1f9d44;">(đang chơi)</span>':"")+'</div></div>';
+    if(profiles.length>1){
+      const delBtn = document.createElement("button");
+      delBtn.textContent = "🗑️ Xóa";
+      delBtn.style.cssText = "padding:6px 12px;border-radius:10px;border:1px solid #f00;background:#fff;color:#f00;cursor:pointer;font-size:.8rem;";
+      delBtn.onclick = ()=>{
+        if(confirm("Xóa hồ sơ '"+p.name+"'? Tiến độ của bé sẽ mất!")){
+          const np = getProfiles().filter(x=>x.id!==p.id);
+          saveProfiles(np);
+          localStorage.removeItem("spidey_state_"+p.id);
+          if(p.id===cur && np.length>0){ switchProfile(np[0].id); }
+          renderProfiles();
+        }
+      };
+      d.appendChild(delBtn);
+    }
+    wrap.appendChild(d);
+  });
+}
+function logoutToProfiles(){
+  renderProfiles();
+  show("s-profile");
+}
 /* ================= HELPERS ================= */
 let fallbackTimer=null;
 
@@ -791,7 +918,7 @@ function toast(msg){ const el=document.getElementById("toast"); el.textContent=m
 function confetti(){ const box=document.querySelector(".phone"); const em=["🎉","⭐","🕸️","✨"];
   for(let i=0;i<16;i++){ const s=document.createElement("div"); s.className="confetti"; s.textContent=em[i%4];
     s.style.left=(8+Math.random()*84)+"%"; s.style.top="-12px"; box.appendChild(s); setTimeout(()=>s.remove(),2400); } }
-const TITLES = {"s-home":"Spidey English","s-map":"Bản đồ thử thách","s-lesson":"Bài học","s-battle":"Trận chiến!","s-loot":"Vật phẩm mới!","s-closet":"Tủ đồ Spidey","s-videos":"Rạp video","s-parent":"Góc phụ huynh"};
+const TITLES = {"s-profile":"Chọn bé","s-home":"Spidey English","s-map":"Bản đồ thử thách","s-lesson":"Bài học","s-battle":"Trận chiến!","s-loot":"Vật phẩm mới!","s-closet":"Tủ đồ Spidey","s-videos":"Rạp video","s-parent":"Góc phụ huynh"};
 function show(id){
   stopSpeak();
   const bv0=document.getElementById("battleVid"); if(bv0){bv0.pause();}
@@ -800,7 +927,7 @@ function show(id){
   document.getElementById(id).classList.add("active");
   document.getElementById("appTitle").textContent = TITLES[id]||"Spidey English";
   document.getElementById("appbar").classList.toggle("show-back", ["s-lesson","s-battle","s-loot"].includes(id));
-  document.getElementById("tabbar").classList.toggle("hidden", ["s-lesson","s-battle","s-loot"].includes(id));
+  document.getElementById("tabbar").classList.toggle("hidden", ["s-lesson","s-battle","s-loot","s-profile"].includes(id));
   document.querySelectorAll(".tabbar button").forEach(b=>b.classList.toggle("on", b.dataset.t===id));
   document.getElementById("main").scrollTop=0;
   document.getElementById("coinCount").textContent=S.coins;
@@ -906,7 +1033,15 @@ function renderStats(){
      <div class="stat"><span>Xu spider-coin</span><b>🕸️ ${S.coins}</b></div>
      <div class="stat"><span>Vật phẩm sưu tầm</span><b>${S.items.length}/${ITEMS.length}</b></div>`;
 }
-function resetProto(){ localStorage.removeItem("spidey_proto2"); location.reload(); }
+function resetProto(){
+  if(!confirm("Xóa TẤT CẢ hồ sơ và tiến độ?")) return;
+  const profiles = getProfiles();
+  profiles.forEach(p=>localStorage.removeItem("spidey_state_"+p.id));
+  localStorage.removeItem("spidey_profiles");
+  localStorage.removeItem("spidey_current_profile");
+  localStorage.removeItem("spidey_proto2");
+  location.reload();
+}
 /* ================= LESSON ENGINE ================= */
 let cur=null, step=0, qIdx=0, built=[], replay=false, heardLines=new Set();
 function startLesson(id, isReplay){ cur=LESSONS.find(l=>l.id===id); replay=!!isReplay; step=0; qIdx=0; built=[]; heardLines=new Set(); show("s-lesson"); renderStep(); }
@@ -1161,6 +1296,7 @@ function winBattle(){
 }
 function equipLoot(){ const id=cur.loot.setId; S.activeSet=id; if(!S.sets.includes(id)) S.sets.push(id); save(); toast("Đã mặc "+cur.loot.name+"!"); show("s-closet"); }
 /* ================= INIT ================= */
+renderProfiles();
 renderHome(); renderMap();
 if('serviceWorker' in navigator){ window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); }); }
 initHomeVideo();
