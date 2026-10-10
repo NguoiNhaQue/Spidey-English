@@ -1,5 +1,5 @@
 /* Spidey English PWA service worker — cache app shell for offline use */
-const CACHE = 'spidey-english-v41';
+const CACHE = 'spidey-english-v42';
 const ASSETS = [
   './',
   './index.html',
@@ -8,11 +8,13 @@ const ASSETS = [
   './icon-512.png'
 ];
 
+
 self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting())
   );
 });
+
 
 self.addEventListener('activate', (e) => {
   e.waitUntil(
@@ -21,6 +23,7 @@ self.addEventListener('activate', (e) => {
     ).then(() => self.clients.claim())
   );
 });
+
 
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
