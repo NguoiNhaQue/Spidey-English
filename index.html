@@ -276,7 +276,7 @@
       <div id="parentStats" style="display:none">
         <div class="card"><h4>👨‍👩‍👧 Hồ sơ các bé</h4><div id="parentProfileList"></div>
           <button class="btn" style="margin-top:8px;" onclick="showAddProfileDialog()">➕ Thêm bé mới</button>
-          <button class="btn ghost" style="margin-top:8px;" onclick="logoutToProfiles()">🔄 Đổi bé đang chơi</button>
+          <button class="btn ghost" style="margin-top:8px;" onclick="logoutToProfiles()">🔄 Đổi bé đang chơi</button><button class="btn" style="margin-top:8px;" onclick="importProfile()">📥 Nhập mã từ máy khác</button><p style="font-size:.8rem;color:#8aa0b8;margin-top:8px">Mỗi máy lưu riêng tiến độ. Bấm "📤 Mã chuyển" ở máy cũ để lấy mã, rồi nhập mã vào máy mới.</p>
         </div>
         <div class="card"><h4>📊 Tiến độ của bé</h4><div id="statsBody"></div></div>
         <div class="card"><h4>⏱️ Cài đặt</h4>
@@ -665,7 +665,7 @@ function renameProfile(id){
   renderProfiles();
   toast("Đã đổi tên thành "+p.name+"!");
 }
-function renderParentProfiles(){
+function exportProfile(id){ const p=getProfiles().find(x=>x.id===id); if(!p) return; let st={}; try{ st=JSON.parse(localStorage.getItem("spidey_state_"+id)||"{}"); }catch(e){} const data={v:1,name:p.name,avatar:p.avatar||"",done:st.done||[],coins:st.coins||0,sets:st.sets||["base"],activeSet:st.activeSet||"base"}; const code=btoa(unescape(encodeURIComponent(JSON.stringify(data)))); prompt("Mã chuyển tiến độ của bé "+p.name+" (copy rồi gửi sang máy mới):",code); } function importProfile(){ const code=prompt("Dán mã chuyển tiến độ vào đây:"); if(!code||!code.trim()) return; try{ const data=JSON.parse(decodeURIComponent(escape(atob(code.trim())))); if(!data||data.v!==1||!data.name||!Array.isArray(data.done)) throw 0; const profiles=getProfiles(); const id="p"+Date.now(); profiles.push({id:id,name:String(data.name).slice(0,20),avatar:data.avatar||"",created:Date.now()}); saveProfiles(profiles); localStorage.setItem("spidey_state_"+id, JSON.stringify({done:data.done,coins:data.coins||0,sets:(Array.isArray(data.sets)&&data.sets.length?data.sets:["base"]),activeSet:data.activeSet||"base"})); renderProfiles(); renderParentProfiles(); toast("Đã nhận tiến độ của "+data.name+"!"); }catch(e){ toast("Mã không đúng, kiểm tra lại nhé!"); } } function renderParentProfiles(){
   const wrap = document.getElementById("parentProfileList");
   if(!wrap) return;
   const profiles = getProfiles();
@@ -679,7 +679,7 @@ function renderParentProfiles(){
     const renameBtn = document.createElement("button");
     renameBtn.textContent = "✏️ Đổi tên";
     renameBtn.style.cssText = "padding:6px 12px;border-radius:10px;border:1px solid #1c2b4a;background:#fff;color:#1c2b4a;cursor:pointer;font-size:.8rem;";
-    renameBtn.onclick = ()=>renameProfile(p.id);
+    renameBtn.onclick = ()=>renameProfile(p.id); const expBtn=document.createElement("button"); expBtn.textContent="📤 Mã chuyển"; expBtn.style.cssText=renameBtn.style.cssText; expBtn.onclick=()=>exportProfile(p.id); d.appendChild(expBtn);
     d.appendChild(renameBtn);
     if(profiles.length>1){
       const delBtn = document.createElement("button");
