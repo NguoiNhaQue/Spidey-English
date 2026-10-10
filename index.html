@@ -1288,7 +1288,7 @@ function renderBossStep(B){
   }
   const g=cur.quiz[qIdx];
   B.innerHTML=`<div class="card" style="text-align:center"><h4>⚔️ Thử thách ${qIdx+1}/${cur.quiz.length}</h4>
-    <div class="scene" style="margin-bottom:10px"><img src="${cur.img}" alt=""></div>
+    <!-- boss quiz scene removed -->
     <div style="margin:10px 0;"><button class="btn" style="font-size:1.5rem;padding:12px 24px;" onclick="speak(cur.quiz[qIdx].options[cur.quiz[qIdx].answer],0.95)">🔊 Nghe lại</button></div>
     <div class="word-opts" style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">${g.options.map((o,i)=>{const img=WORD_IMG[o.toLowerCase()]||"";return `<button class="word-opt" style="padding:8px;" onclick="tapAnswer(this,${i},${g.answer},'${o.replace(/'/g,"\'")}')">${img?`<img src="${img}" alt="${o}" style="width:90px;height:90px;object-fit:cover;border-radius:12px;display:block;margin-bottom:6px;">`:""}<div style="font-weight:700;">${o}</div></button>`;}).join("")}</div></div>`;
   window._win=()=>{ qIdx++; if(qIdx>=cur.quiz.length) startBattle(); else renderStep(); };
