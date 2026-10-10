@@ -568,7 +568,7 @@ const SETS = [
   {id:"farmer", img:"demo/assets_sets/set_farmer.png", name:"Bộ nông dân", desc:"Boss 11", locked:true},
   {id:"champion", img:"demo/assets_sets/set_champion.png", name:"Bộ vô địch vàng", desc:"Boss cuối 🏆", locked:true}
 ];
-/* ================= STATE ================= */
+const WORD_IMG={};LESSONS.forEach(L=>{if(!L.boss){(L.vocab||[]).forEach(v=>{const k=String(v[0]).toLowerCase();if(!WORD_IMG[k])WORD_IMG[k]=v[2];});}});/* ================= STATE ================= */
 /* ================= PROFILES (multi-kid, local only) ================= */
 const DEFAULT_STATE = '{"done":[],"coins":0,"sets":["base"],"activeSet":"base"}';
 function getProfiles(){
@@ -1076,7 +1076,7 @@ function renderStep(){
     setTimeout(()=>{ const v=document.getElementById("lessonVid"); if(v){ v.play().catch(()=>{}); } }, 400);
   } else if(step===1){
     B.innerHTML=`<div class="card"><h4>📖 Từ mới — chạm thẻ để nghe</h4>
-      <div class="flash">${cur.vocab.map(v=>`<div class="flashcard" style="background-image:url('${v[2]}')" onclick="speak('${v[0]}',0.85)"><div class="cap"><div class="en">${v[0]} 🔊</div><div class="vi">${v[1]}</div></div></div>`).join("")}</div></div>
+      <div class="flash">${cur.vocab.map(v=>`<div class="flashcard" style="background-image:url('${WORD_IMG[v[0].toLowerCase()]||v[2]}')" onclick="speak('${v[0]}',0.85)"><div class="cap"><div class="en">${v[0]} 🔊</div><div class="vi">${v[1]}</div></div></div>`).join("")}</div></div>
       <button class="btn red" onclick="nextStep()">Học xong ▶</button>`;
   } else if(step===2){
     B.innerHTML=`<div class="card"><h4>🗣️ Pyramid Reading</h4>
@@ -1283,22 +1283,22 @@ function finishLesson(){
 function renderBossStep(B){
   if(step===0){
     B.innerHTML=`<div class="card"><h4>📖 Ôn từ nhanh — chạm thẻ để nghe</h4>
-      <div class="flash">${cur.vocab.map(v=>`<div class="flashcard" style="background-image:url('${v[2]}')" onclick="speak('${v[0]}',0.85)"><div class="cap"><div class="en">${v[0]} 🔊</div><div class="vi">${v[1]}</div></div></div>`).join("")}</div></div>
+      <div class="flash">${cur.vocab.map(v=>`<div class="flashcard" style="background-image:url('${WORD_IMG[v[0].toLowerCase()]||v[2]}')" onclick="speak('${v[0]}',0.85)"><div class="cap"><div class="en">${v[0]} 🔊</div><div class="vi">${v[1]}</div></div></div>`).join("")}</div></div>
       <button class="btn red" onclick="nextStep()">Sẵn sàng đánh boss ▶</button>`; return;
   }
   const g=cur.quiz[qIdx];
   B.innerHTML=`<div class="card" style="text-align:center"><h4>⚔️ Thử thách ${qIdx+1}/${cur.quiz.length}</h4>
     <div class="scene" style="margin-bottom:10px"><img src="${cur.img}" alt=""></div>
     <div style="margin:10px 0;"><button class="btn" style="font-size:1.5rem;padding:12px 24px;" onclick="speak(cur.quiz[qIdx].options[cur.quiz[qIdx].answer],0.95)">🔊 Nghe lại</button></div>
-    <div class="word-opts" style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">${g.options.map((o,i)=>{const v=cur.vocab.find(x=>x[0].toLowerCase()===o.toLowerCase());const img=v?v[2]:"";return `<button class="word-opt" style="padding:8px;" onclick="tapAnswer(this,${i},${g.answer},'${o.replace(/'/g,"\'")}')">${img?`<img src="${img}" alt="${o}" style="width:90px;height:90px;object-fit:cover;border-radius:12px;display:block;margin-bottom:6px;">`:""}<div style="font-weight:700;">${o}</div></button>`;}).join("")}</div></div>`;
+    <div class="word-opts" style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">${g.options.map((o,i)=>{const img=WORD_IMG[o.toLowerCase()]||"";return `<button class="word-opt" style="padding:8px;" onclick="tapAnswer(this,${i},${g.answer},'${o.replace(/'/g,"\'")}')">${img?`<img src="${img}" alt="${o}" style="width:90px;height:90px;object-fit:cover;border-radius:12px;display:block;margin-bottom:6px;">`:""}<div style="font-weight:700;">${o}</div></button>`;}).join("")}</div></div>`;
   window._win=()=>{ qIdx++; if(qIdx>=cur.quiz.length) startBattle(); else renderStep(); };
   speak(g.options[g.answer], 0.95);
 }
 function startBattle(){
   show("s-battle");
   const v=document.getElementById("battleVid");
-  document.getElementById("battleSay").innerHTML="<b>Spidey:</b> Xem mình quăng tơ đánh bại King Grime nè! 🕸️";
-  v.currentTime=0; v.onended=()=>winBattle();
+  var _mn=((cur.title.split("BOSS:")[1]||"").replace(/[^\p{L} ]/gu,"").trim()||"quái vật"); document.getElementById("battleSay").innerHTML="<b>Spidey:</b> Xem mình quăng tơ đánh bại "+_mn+" nè! 🕸️";
+  try{var _se=v.querySelector("source");if(_se)_se.src=cur.vid;}catch(e){} try{v.src=cur.vid;}catch(e){} v.load(); v.currentTime=0; v.onended=()=>winBattle();
   setTimeout(()=>{ v.play().catch(()=>{}); },300);
   speak("Let's fight!",1);
 }
